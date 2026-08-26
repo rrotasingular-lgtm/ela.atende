@@ -3067,7 +3067,10 @@ a { color: inherit; text-decoration: none; }
           <p style="font-size:13px; color:var(--rs-ink-soft); margin-bottom:12px;">
             ${syncStatusText()}
           </p>
-          <button class="rs-btn rs-btn-ghost" id="cf-logout">${RS.icon("close", 14)} Trocar de conta</button>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="rs-btn rs-btn-ghost" id="cf-minha-conta">${RS.icon("edit", 14)} Minha conta</button>
+            <button class="rs-btn rs-btn-ghost" id="cf-logout">${RS.icon("close", 14)} Trocar de conta</button>
+          </div>
         </div>` : `
         <div class="rs-card" style="grid-column:1/-1;">
           <div class="rs-section-title">Conta e sincronização</div>
@@ -3139,6 +3142,11 @@ a { color: inherit; text-decoration: none; }
       });
     }
 
+    const minhaContaBtn = container.querySelector("#cf-minha-conta");
+    if (minhaContaBtn) {
+      minhaContaBtn.addEventListener("click", abrirMinhaConta);
+    }
+
     container.querySelector("#cf-export").addEventListener("click", () => {
       const dump = storage.exportAll(["clientes", "atendimentos", "agenda", "financeiro", "documentos"]);
       const blob = new Blob([JSON.stringify(dump, null, 2)], { type: "application/json" });
@@ -3189,6 +3197,104 @@ a { color: inherit; text-decoration: none; }
     return ok
       ? "🟢 Sincronizado com a nuvem. Seus dados estão disponíveis em qualquer aparelho onde você entrar com a mesma conta."
       : "🔴 Sincronizando (ou offline no momento) — os dados continuam salvos normalmente neste aparelho e serão enviados assim que houver internet.";
+  }
+
+  // Edita e-mail, usuário e PIN da conta ativa — mesmo padrão do
+  // ela.organiza (client.auth.updateUser + profiles.update).
+  function abrirMinhaConta() {
+    const conta = RS.gate.contaAtivaSalva();
+    if (!conta) { RS.toast("Nenhuma conta ativa encontrada."); return; }
+    const emailAtual = conta.email || "";
+    const labelAtual = conta.label || "";
+    const sufixoAtual = labelAtual.replace(/^ela\.+/, "");
+
+    const bodyHtml = `
+      <div class="rs-field"><label>E-mail</label><input type="email" class="rs-input" id="mc-email" value="${util.escapeHtml(emailAtual)}" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
+      <div class="rs-field">
+        <label>Usuário</label>
+        <div style="display:flex; align-items:center; gap:0;">
+          <span class="rs-gate-prefix" style="padding:12px 0 12px 14px; border:1px solid var(--rs-border-soft); border-right:none; border-radius:10px 0 0 10px; color:var(--rs-ink-faint);">ela.</span>
+          <input class="rs-input" id="mc-user" value="${util.escapeHtml(sufixoAtual)}" style="border-radius:0 10px 10px 0;" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="rs-field"><label>Novo PIN (4 dígitos, opcional)</label><input type="password" class="rs-input" id="mc-pin" placeholder="Deixe em branco para manter o atual" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"></div>
+      <p id="mc-error" style="display:none; color:#D64545; font-size:13px; margin-top:4px;"></p>
+    `;
+    const footHtml = `<button class="rs-btn rs-btn-primary" id="mc-salvar">${RS.icon("check", 14)} Salvar alterações</button>`;
+
+    const modal = RS.openModal({ title: "Minha conta", bodyHtml, footHtml });
+
+    const userInput = modal.querySelector("#mc-user");
+    userInput.addEventListener("input", function () {
+      let v = this.value.toLowerCase().replace(/^ela\.+/, "").replace(/[^a-z0-9.]/g, "");
+      this.value = v;
+    });
+
+    modal.querySelector("#mc-salvar").addEventListener("click", () => {
+      const errEl = modal.querySelector("#mc-error");
+      function mostrarErro(msg) { errEl.textContent = msg; errEl.style.display = "block"; }
+
+      const novoEmail = (modal.querySelector("#mc-email").value || "").trim().toLowerCase();
+      const novoSufixo = (modal.querySelector("#mc-user").value || "").trim();
+      const novoUsuario = novoSufixo ? "ela." + novoSufixo : "";
+      const novoPin = (modal.querySelector("#mc-pin").value || "").trim();
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoEmail)) { mostrarErro("Informe um e-mail válido."); return; }
+      if (!novoUsuario) { mostrarErro("Informe um usuário."); return; }
+      if (novoPin && !/^\d{4}$/.test(novoPin)) { mostrarErro("O PIN precisa ter exatamente 4 dígitos."); return; }
+
+      const btn = modal.querySelector("#mc-salvar");
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+
+      RS.syncLoadSupabase((client) => {
+        const updates = {};
+        if (novoEmail && novoEmail !== emailAtual) updates.email = novoEmail;
+        if (novoPin) updates.password = "ela-pin-" + novoPin;
+
+        function atualizarPerfilEFinalizar() {
+          if (novoUsuario === labelAtual) { finalizar(); return; }
+          client.from("profiles").update({ label: novoUsuario }).eq("id", conta.userId).then((res) => {
+            if (res.error) {
+              mostrarErro("Falha ao atualizar usuário (" + res.error.message + ").");
+              btn.disabled = false; btn.textContent = "Salvar alterações";
+              return;
+            }
+            finalizar();
+          }).catch((e) => {
+            mostrarErro("Erro de rede: " + e.message);
+            btn.disabled = false; btn.textContent = "Salvar alterações";
+          });
+        }
+
+        function finalizar() {
+          try {
+            window.localStorage.setItem("rs:activeAccount", JSON.stringify({ userId: conta.userId, label: novoUsuario, email: novoEmail }));
+          } catch (e) {}
+          RS.closeModal();
+          RS.toast("Conta atualizada.");
+        }
+
+        if (Object.keys(updates).length > 0) {
+          client.auth.updateUser(updates).then((res) => {
+            if (res.error) {
+              mostrarErro("Falha ao atualizar conta (" + res.error.message + ").");
+              btn.disabled = false; btn.textContent = "Salvar alterações";
+              return;
+            }
+            atualizarPerfilEFinalizar();
+          }).catch((e) => {
+            mostrarErro("Erro de rede: " + e.message);
+            btn.disabled = false; btn.textContent = "Salvar alterações";
+          });
+        } else {
+          atualizarPerfilEFinalizar();
+        }
+      }, () => {
+        mostrarErro("Sem conexão com a internet.");
+        btn.disabled = false; btn.textContent = "Salvar alterações";
+      });
+    });
   }
 
   function renderUsage(el) {
