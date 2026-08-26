@@ -1274,22 +1274,21 @@ a { color: inherit; text-decoration: none; }
           if (resp.error) { mostrarErro("Falha no servidor (" + resp.error.message + ")."); return; }
           if (!resp.data) {
             client.auth.signUp({ email, password: senha }).then((res) => {
-              if (res.error || !res.data || !res.data.user) {
-                mostrarErro("Não foi possível criar a conta" + (res.error ? " (" + res.error.message + ")." : "."));
+              if (res.error) {
+                mostrarErro("Não foi possível criar a conta (" + res.error.message + ").");
                 return;
               }
-              const uid = res.data.user.id;
-              function gravarPerfil() {
-                client.from("profiles").insert({ id: uid, label: usuario }).then((ins) => {
+              function gravarPerfil(uidReal) {
+                client.from("profiles").upsert({ id: uidReal, label: usuario }).then((ins) => {
                   if (ins.error) { mostrarErro("Falha ao salvar perfil (" + ins.error.message + ")."); return; }
-                  iniciarApp(uid, usuario, email);
+                  iniciarApp(uidReal, usuario, email);
                 }).catch((e) => mostrarErro("Erro de rede: " + e.message));
               }
-              if (res.data.session) { gravarPerfil(); return; }
+              if (res.data && res.data.session && res.data.user) { gravarPerfil(res.data.user.id); return; }
               mostrarStatus("Concluindo autenticação...");
               client.auth.signInWithPassword({ email, password: senha }).then((loginRes) => {
-                if (loginRes.error || !loginRes.data || !loginRes.data.session) { mostrarErro("Autenticação incompleta — tente novamente."); return; }
-                gravarPerfil();
+                if (loginRes.error || !loginRes.data || !loginRes.data.session || !loginRes.data.user) { mostrarErro("Autenticação incompleta — tente novamente."); return; }
+                gravarPerfil(loginRes.data.user.id);
               }).catch((e) => mostrarErro("Erro de rede: " + e.message));
             }).catch((e) => mostrarErro("Erro de rede: " + e.message));
           } else {
