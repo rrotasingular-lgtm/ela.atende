@@ -624,6 +624,634 @@ a { color: inherit; text-decoration: none; }
 <noscript>Esta plataforma requer JavaScript habilitado para funcionar.</noscript>
 <script>
 
+/* ---- js/i18n.js ---- */
+/**
+ * RS.i18n — Português de Portugal / Português do Brasil.
+ * Deteta o idioma do navegador na primeira vez; depois disso, guarda a
+ * escolha (manual ou automática) no aparelho e passa a respeitá-la
+ * sempre, independentemente do que o navegador disser. Mesmo padrão do
+ * ela.organiza: dicionário por chave + data-i18n nos elementos.
+ */
+(function (global) {
+  "use strict";
+
+  const TRADUCOES = {
+    "pt-PT": {
+      "gate.subtitulo": "Entra com o teu e-mail, utilizador e PIN.",
+      "gate.email.placeholder": "teu@email.com",
+      "gate.utilizador.placeholder": "utilizador",
+      "gate.pin.placeholder": "PIN (4 dígitos)",
+      "gate.entrar": "Entrar",
+      "gate.aentrar": "Um momento…",
+      "gate.esqueciPin": "Esqueci o PIN",
+      "gate.esqueciPin.mensagem": "Entra em contacto com o suporte da Rota Singular para redefinires o teu PIN.",
+      "gate.status.verificando": "A verificar…",
+      "gate.status.concluindoAutenticacao": "A concluir autenticação…",
+      "gate.erro.emailInvalido": "Introduz um e-mail válido.",
+      "gate.erro.utilizadorObrigatorio": "Introduz um utilizador.",
+      "gate.erro.pinInvalido": "O PIN tem de ter exatamente 4 dígitos.",
+      "gate.erro.falhaServidor": "Falha no servidor",
+      "gate.erro.falhaGuardarPerfil": "Falha ao guardar perfil",
+      "gate.erro.redeGenerico": "Erro de rede:",
+      "gate.erro.contaPendente": "Este e-mail já tem conta com outro PIN, ou a conta ainda não foi confirmada. Usa \"Esqueci o PIN\" se for o caso.",
+      "gate.erro.credenciaisInvalidas": "E-mail, utilizador ou PIN incorretos.",
+      "gate.erro.semInternet": "Sem ligação à internet.",
+      "gate.pinTroca.subtitulo": "Este PIN é temporário. Define um novo PIN de 4 dígitos, só teu, para continuares.",
+      "gate.pinTroca.novoPin.placeholder": "Novo PIN (4 dígitos)",
+      "gate.pinTroca.confirmarPin.placeholder": "Confirma o novo PIN",
+      "gate.pinTroca.submeter": "Definir novo PIN",
+      "gate.pinTroca.erro.pinInvalido": "O novo PIN tem de ter 4 dígitos.",
+      "gate.pinTroca.erro.naoCoincidem": "Os dois PINs não coincidem.",
+      "gate.pinTroca.erro.falhaDefinir": "Não foi possível definir o novo PIN",
+      "gate.pinTroca.erro.falhaConcluir": "PIN atualizado, mas houve um problema a concluir",
+
+      "nav.dashboard": "O meu painel",
+      "nav.clientes": "Clientes",
+      "nav.agenda": "Agenda",
+      "nav.financeiro": "Financeiro",
+      "nav.relatorios": "Relatórios",
+      "nav.configuracoes": "Definições",
+      "shell.dashboard.subtitulo": "Os teus atendimentos, organizados.",
+      "shell.clientes.subtitulo": "Processo digital",
+      "shell.agenda.subtitulo": "Calendário de atendimentos",
+      "shell.financeiro.subtitulo": "Receitas, despesas e pendências",
+      "shell.relatorios.subtitulo": "Resumos e exportação em PDF",
+      "shell.configuracoes.subtitulo": "Personalização, terminologia, conta e cópia de segurança",
+
+      "ajuda.titulo": "Ajuda",
+      "ajuda.texto": "Não sabes por onde começar? O guia rápido explica cada parte da aplicação em poucos passos.",
+      "ajuda.botao": "Guia da aplicação",
+      "guia.titulo": "Guia da aplicação",
+      "guia.fechar": "Entendi",
+      "guia.clientes.texto": "Regista aqui cada pessoa — dados de contacto, diagnóstico/objetivos e histórico. Toca num nome para veres a ficha completa.",
+      "guia.agenda.titulo": "🗓️ Agenda",
+      "guia.agenda.texto": "Marca compromissos, ligados ou não a um cliente. Cada item mostra data, duração e estado (agendado, feito, faltou).",
+      "guia.financeiro.titulo": "💰 Financeiro",
+      "guia.financeiro.texto": "Regista pagamentos e despesas por categoria, ligados a um cliente se fizer sentido. O painel principal soma tudo por período.",
+      "guia.relatorios.titulo": "📊 Relatórios",
+      "guia.relatorios.texto": "Visão geral com números do período — quantos atendimentos, quanto entrou, quantos clientes ativos.",
+      "guia.configuracoes.titulo": "⚙️ Definições",
+      "guia.configuracoes.texto": "Personaliza nome, especialidade, cor, terminologia e tipos de atendimento. É também aqui que fica a conta, a sincronização e a cópia de segurança.",
+      "guia.sync.titulo": "☁️ Sincronização",
+      "guia.sync.texto": "O ponto ao lado de \"Conta e sincronização\" mostra se este aparelho está ON-LINE ou OFF-LINE agora. Os dados são sempre guardados localmente primeiro e enviados para a nuvem assim que houver internet — nada se perde por falta de rede.",
+      "guia.backup.titulo": "💾 Cópia de segurança",
+      "guia.backup.texto": "Em Definições → Armazenamento e cópia de segurança, dá para exportar tudo num ficheiro .json a qualquer momento.",
+
+      "minhaConta.titulo": "Minha conta",
+      "minhaConta.email.label": "E-mail",
+      "minhaConta.utilizador.label": "Utilizador",
+      "minhaConta.pin.label": "Novo PIN (4 dígitos, opcional)",
+      "minhaConta.pin.placeholder": "Deixa em branco para manter o atual",
+      "minhaConta.idioma.titulo": "Idioma",
+      "minhaConta.idioma.pt-PT": "Português de Portugal",
+      "minhaConta.idioma.pt-BR": "Português do Brasil",
+      "minhaConta.guardar": "Guardar alterações",
+      "minhaConta.aGuardar": "A guardar…",
+      "minhaConta.erro.emailInvalido": "Indica um e-mail válido.",
+      "minhaConta.erro.utilizadorObrigatorio": "Indica um utilizador.",
+      "minhaConta.erro.pinInvalido": "O PIN tem de ter exatamente 4 dígitos.",
+      "minhaConta.erro.falhaUtilizador": "Falha ao atualizar utilizador",
+      "minhaConta.erro.falhaConta": "Falha ao atualizar conta",
+      "minhaConta.erro.redeGenerico": "Erro de rede:",
+      "minhaConta.erro.semInternet": "Sem ligação à internet.",
+      "minhaConta.sucesso": "Conta atualizada.",
+      "minhaConta.trocarConta": "Trocar de conta",
+      "minhaConta.confirmarSaida": "Sair desta conta? Os dados continuam guardados neste aparelho, mas vais precisar de entrar novamente para sincronizar.",
+      "minhaConta.editar": "Minha conta",
+
+      "sync.online": "ON-LINE",
+      "sync.offline": "OFF-LINE",
+      "sync.sincronizado": "🟢 Sincronizado com a nuvem. Os teus dados estão disponíveis em qualquer aparelho onde entrares com a mesma conta.",
+      "sync.aSincronizar": "🔴 A sincronizar (ou offline neste momento) — os dados continuam guardados normalmente neste aparelho e serão enviados assim que houver internet.",
+      "sync.naoConfigurado": "Esta aplicação ainda está a correr só neste aparelho (sem sessão). Para sincronizar entre dispositivos, é preciso configurar o Supabase no ficheiro — fala com quem gere a aplicação.",
+      "conta.sincronizacao.titulo": "Conta e sincronização",
+      "backup.titulo": "Armazenamento e cópia de segurança",
+      "backup.texto": "Exporta todos os dados guardados localmente (clientes, atendimentos, agenda, financeiro, documentos) num ficheiro JSON — usa para levares os teus dados a outro dispositivo/navegador ou como cópia de segurança.",
+      "backup.exportar": "Exportar cópia (.json)",
+      "backup.importar": "Importar cópia (.json)",
+      "backup.aviso": "Importar substitui os dados atuais das entidades presentes no ficheiro. Recomendamos exportar uma cópia antes de importar.",
+
+      "comum.cancelar": "Cancelar",
+      "comum.salvar": "Guardar",
+      "comum.editar": "Editar",
+      "comum.excluir": "Eliminar",
+      "comum.voltar": "Voltar",
+      "comum.ativo": "Ativo",
+      "comum.inativo": "Inativo",
+      "comum.todos": "Todos",
+      "comum.status": "Estado",
+      "comum.observacoes": "Observações",
+      "comum.telefone": "Telefone",
+      "comum.email": "E-mail",
+      "comum.endereco": "Morada",
+      "comum.semNome": "Sem nome",
+      "comum.opcional": "(opcional)",
+      "comum.anos": "anos",
+
+      "clientes.buscar": "Procurar",
+      "clientes.novo": "Novo",
+      "clientes.nenhumEncontrado": "Nenhum {singular} encontrado.",
+      "clientes.cadastrar": "Registar",
+      "clientes.nomeCompleto": "Nome completo *",
+      "clientes.dataNascimento": "Data de nascimento",
+      "clientes.escolaInstituicao": "Escola / Instituição",
+      "clientes.profissao": "Profissão",
+      "clientes.dataInicio": "Data de início",
+      "clientes.editarTitulo": "Editar {singular}",
+      "clientes.novoTitulo": "Novo {singular}",
+      "clientes.informeNome": "Indica o nome.",
+      "clientes.cadastroAtualizado": "Registo atualizado.",
+      "clientes.clienteCadastrado": "Cliente registado.",
+      "clientes.registroNaoEncontrado": "Registo não encontrado.",
+      "clientes.confirmarExclusao": "Eliminar {nome}? Esta ação não pode ser desfeita.",
+      "clientes.registroExcluido": "Registo eliminado.",
+      "clientes.tabPerfil": "Perfil",
+      "clientes.tabFinanceiro": "Financeiro",
+      "clientes.dadosContato": "Dados de contacto",
+      "clientes.desde": "desde",
+      "clientes.responsavelLabel": "Responsável",
+
+      "dashboard.atendimentosHoje": "Atendimentos hoje",
+      "dashboard.agendadosParaHoje": "agendados para hoje",
+      "dashboard.nenhumAgendamentoHoje": "nenhum agendamento hoje",
+      "dashboard.proximos7dias": "Próximos 7 dias",
+      "dashboard.atendimentosAgendados": "atendimentos agendados",
+      "dashboard.ativos": "ativos",
+      "dashboard.novosUltimos30dias": "novos/as nos últimos 30 dias",
+      "dashboard.aReceber": "A receber",
+      "dashboard.pendencias": "pendência(s)",
+      "dashboard.agendaHoje": "Agenda de hoje",
+      "dashboard.verAgenda": "Ver agenda",
+      "dashboard.pendenciasFinanceiras": "Pendências financeiras",
+      "dashboard.verFinanceiro": "Ver financeiro",
+      "dashboard.evolucaoSemanal": "Evolução semanal de atendimentos",
+      "dashboard.nenhumAtendimentoHoje": "Nenhum atendimento agendado para hoje.",
+      "dashboard.nenhumaPendencia": "Nenhuma pendência financeira. Tudo em dia.",
+      "dashboard.lancamento": "Lançamento",
+      "dashboard.confirmado": "confirmado",
+
+      "timeline.registrar": "Registar",
+      "timeline.nenhumRegistro": "Nenhum registo ainda. A evolução completa aparece aqui conforme os atendimentos forem lançados.",
+      "timeline.confirmarExclusao": "Eliminar este registo da linha do tempo?",
+      "timeline.registroRemovido": "Registo removido.",
+      "timeline.sessao": "Sessão",
+      "timeline.objetivosSessao": "Objetivos da sessão",
+      "timeline.descricao": "Descrição",
+      "timeline.atividades": "Atividades",
+      "timeline.materiaisUtilizados": "Materiais utilizados",
+      "timeline.respostaObservada": "Resposta observada",
+      "timeline.proximosPassos": "Próximos passos",
+      "timeline.data": "Data *",
+      "timeline.hora": "Hora",
+      "timeline.duracaoMin": "Duração (min)",
+      "timeline.tipo": "Tipo",
+      "timeline.descricaoAtendimento": "Descrição do atendimento",
+      "timeline.editarRegistro": "Editar registo",
+      "timeline.informeData": "Indica a data.",
+      "timeline.registroSalvo": "Registo guardado na linha do tempo.",
+
+      "agenda.status.confirmado": "confirmado",
+      "agenda.status.realizado": "realizado",
+      "agenda.status.falta": "falta",
+      "agenda.status.cancelado": "cancelado",
+      "agenda.status.remarcado": "remarcado",
+      "agenda.novoAgendamento": "Novo agendamento",
+      "agenda.editarAgendamento": "Editar agendamento",
+      "agenda.agendamento": "agendamento",
+      "agenda.agendamentos": "agendamentos",
+      "agenda.nenhumNesteDia": "Nenhum agendamento neste dia.",
+      "agenda.fechar": "Fechar",
+      "agenda.hoje": "Hoje",
+      "agenda.titulo": "Título *",
+      "agenda.tituloPlaceholder": "Ex.: Sessão com {nome}",
+      "agenda.clienteGenerico": "cliente",
+      "agenda.opcional": "(opcional)",
+      "agenda.nenhum": "— nenhum/a —",
+      "agenda.data": "Data *",
+      "agenda.hora": "Hora",
+      "agenda.notas": "Notas",
+      "agenda.excluir": "Eliminar",
+      "agenda.confirmarExclusao": "Eliminar este agendamento?",
+      "agenda.agendamentoExcluido": "Agendamento eliminado.",
+      "agenda.informeTituloData": "Indica o título e a data.",
+      "agenda.agendamentoSalvo": "Agendamento guardado.",
+
+      "financeiro.recebidoMes": "Recebido no mês",
+      "financeiro.despesasMes": "Despesas no mês",
+      "financeiro.lancamentos": "Lançamentos",
+      "financeiro.novoLancamento": "Novo lançamento",
+      "financeiro.editarLancamento": "Editar lançamento",
+      "financeiro.nenhumLancamento": "Nenhum lançamento registado ainda.",
+      "financeiro.status.pendente": "pendente",
+      "financeiro.status.pago": "pago",
+      "financeiro.tipo": "Tipo",
+      "financeiro.receita": "Receita",
+      "financeiro.despesa": "Despesa",
+      "financeiro.categoria": "Categoria",
+      "financeiro.valor": "Valor (R$) *",
+      "financeiro.pendente": "Pendente",
+      "financeiro.pago": "Pago",
+      "financeiro.descricao": "Descrição",
+      "financeiro.excluir": "Eliminar",
+      "financeiro.confirmarExclusao": "Eliminar este lançamento?",
+      "financeiro.lancamentoExcluido": "Lançamento eliminado.",
+      "financeiro.informeValorData": "Indica o valor e a data.",
+      "financeiro.lancamentoSalvo": "Lançamento guardado.",
+
+      "relatorios.gerarRelatorio": "Gerar relatório",
+      "relatorios.todos": "Todos os {plural}",
+      "relatorios.resumoCliente": "Resumo do cliente",
+      "relatorios.porPeriodo": "Relatório por período",
+      "relatorios.mensal": "Relatório mensal",
+      "relatorios.historicoCompleto": "Histórico completo",
+      "relatorios.de": "De",
+      "relatorios.ate": "Até",
+      "relatorios.exportarImprimir": "Exportar / Imprimir (PDF)",
+      "relatorios.recebido": "Recebido",
+      "relatorios.pendente": "Pendente",
+      "relatorios.data": "Data",
+      "relatorios.objetivos": "Objetivos",
+      "relatorios.nenhumNoPeriodo": "Nenhum atendimento no período selecionado.",
+      "relatorios.emitidoEm": "Emitido em",
+      "relatorios.periodo": "Período",
+      "relatorios.nenhumDado": "Nenhum dado encontrado para os filtros selecionados.",
+
+      "config.identidade": "Identidade do profissional",
+      "config.nomeProfissional": "Nome do profissional",
+      "config.especialidade": "Especialidade",
+      "config.corPrincipal": "Cor principal",
+      "config.salvarIdentidade": "Guardar identidade",
+      "config.terminologia": "Terminologia (rótulos do sistema)",
+      "config.nomeClienteSingular": "Nome do cliente (singular)",
+      "config.nomeClientePlural": "Nome do cliente (plural)",
+      "config.nomeAtendimentoSingular": "Nome do atendimento (singular)",
+      "config.nomeAtendimentoPlural": "Nome do atendimento (plural)",
+      "config.salvarTerminologia": "Guardar terminologia",
+      "config.terminologiaExplicacao": "É assim que a plataforma-base se adapta a cada profissão sem reconstruir o sistema.",
+      "config.tiposAtendimento": "Tipos de atendimento",
+      "config.novoTipo": "Novo tipo...",
+      "config.categoriasFinanceiras": "Categorias financeiras",
+      "config.novaCategoria": "Nova categoria...",
+      "config.identidadeAtualizada": "Identidade atualizada.",
+      "config.terminologiaAtualizada": "Terminologia atualizada.",
+      "config.backupExportado": "Cópia exportada.",
+      "config.confirmarImportar": "Importar esta cópia vai SUBSTITUIR os dados atuais das entidades presentes no ficheiro. Desejas continuar?",
+      "config.ficheiroInvalido": "Ficheiro inválido: não é um JSON válido.",
+      "config.falhaImportar": "Não foi possível importar a cópia.",
+      "config.backupImportado": "Cópia importada com sucesso.",
+      "config.espacoUsado": "Espaço usado",
+      "config.espacoQuaseCheio": "Armazenamento quase cheio — exporta uma cópia e considera arquivar clientes inativos.",
+      "config.clienteDefault": "Cliente",
+      "config.clientesDefault": "Clientes",
+      "config.atendimentoDefault": "Atendimento",
+      "config.atendimentosDefault": "Atendimentos"
+    },
+    "pt-BR": {
+      "gate.subtitulo": "Entre com seu e-mail, usuário e PIN.",
+      "gate.email.placeholder": "seu@email.com",
+      "gate.utilizador.placeholder": "usuário",
+      "gate.pin.placeholder": "PIN (4 dígitos)",
+      "gate.entrar": "Entrar",
+      "gate.aentrar": "Um momento...",
+      "gate.esqueciPin": "Esqueci o PIN",
+      "gate.esqueciPin.mensagem": "Entre em contato com o suporte da Rota Singular para redefinir seu PIN.",
+      "gate.status.verificando": "Verificando...",
+      "gate.status.concluindoAutenticacao": "Concluindo autenticação...",
+      "gate.erro.emailInvalido": "Informe um e-mail válido.",
+      "gate.erro.utilizadorObrigatorio": "Informe um usuário.",
+      "gate.erro.pinInvalido": "O PIN precisa ter exatamente 4 dígitos.",
+      "gate.erro.falhaServidor": "Falha no servidor",
+      "gate.erro.falhaGuardarPerfil": "Falha ao salvar perfil",
+      "gate.erro.redeGenerico": "Erro de rede:",
+      "gate.erro.contaPendente": "Este e-mail já tem conta com outro PIN, ou a conta ainda não foi confirmada. Use \"Esqueci o PIN\" se for o caso.",
+      "gate.erro.credenciaisInvalidas": "E-mail, usuário ou PIN incorretos.",
+      "gate.erro.semInternet": "Sem conexão com a internet.",
+      "gate.pinTroca.subtitulo": "Este PIN é temporário. Defina um novo PIN de 4 dígitos, só seu, para continuar.",
+      "gate.pinTroca.novoPin.placeholder": "Novo PIN (4 dígitos)",
+      "gate.pinTroca.confirmarPin.placeholder": "Confirme o novo PIN",
+      "gate.pinTroca.submeter": "Definir novo PIN",
+      "gate.pinTroca.erro.pinInvalido": "O novo PIN precisa ter 4 dígitos.",
+      "gate.pinTroca.erro.naoCoincidem": "Os dois PINs não coincidem.",
+      "gate.pinTroca.erro.falhaDefinir": "Não foi possível definir o novo PIN",
+      "gate.pinTroca.erro.falhaConcluir": "PIN atualizado, mas houve um problema ao concluir",
+
+      "nav.dashboard": "Meu painel",
+      "nav.clientes": "Clientes",
+      "nav.agenda": "Agenda",
+      "nav.financeiro": "Financeiro",
+      "nav.relatorios": "Relatórios",
+      "nav.configuracoes": "Configurações",
+      "shell.dashboard.subtitulo": "Seus atendimentos, organizados.",
+      "shell.clientes.subtitulo": "Prontuário digital",
+      "shell.agenda.subtitulo": "Calendário de atendimentos",
+      "shell.financeiro.subtitulo": "Receitas, despesas e pendências",
+      "shell.relatorios.subtitulo": "Resumos e exportação em PDF",
+      "shell.configuracoes.subtitulo": "Personalização, terminologia, conta e backup",
+
+      "ajuda.titulo": "Ajuda",
+      "ajuda.texto": "Não sabe por onde começar? O guia rápido explica cada parte do app em poucos passos.",
+      "ajuda.botao": "Guia do app",
+      "guia.titulo": "Guia do app",
+      "guia.fechar": "Entendi",
+      "guia.clientes.texto": "Cadastre cada pessoa aqui — dados de contato, diagnóstico/objetivos e histórico. Toque num nome para ver a ficha completa.",
+      "guia.agenda.titulo": "🗓️ Agenda",
+      "guia.agenda.texto": "Marque compromissos, ligados ou não a um cliente. Cada item mostra data, duração e status (agendado, feito, faltou).",
+      "guia.financeiro.titulo": "💰 Financeiro",
+      "guia.financeiro.texto": "Registre pagamentos e despesas por categoria, ligados a um cliente se fizer sentido. O painel principal soma tudo por período.",
+      "guia.relatorios.titulo": "📊 Relatórios",
+      "guia.relatorios.texto": "Visão geral com números do período — quantos atendimentos, quanto entrou, quantos clientes ativos.",
+      "guia.configuracoes.titulo": "⚙️ Configurações",
+      "guia.configuracoes.texto": "Personalize nome, especialidade, cor, terminologia e tipos de atendimento. É também onde fica a conta, a sincronização e o backup.",
+      "guia.sync.titulo": "☁️ Sincronização",
+      "guia.sync.texto": "O pontinho ao lado de \"Conta e sincronização\" mostra se este aparelho está ON-LINE ou OFF-LINE agora. Os dados são sempre guardados localmente primeiro e enviados para a nuvem assim que houver internet — nada se perde por falta de rede.",
+      "guia.backup.titulo": "💾 Backup",
+      "guia.backup.texto": "Em Configurações → Armazenamento e backup, dá para exportar tudo num arquivo .json a qualquer momento.",
+
+      "minhaConta.titulo": "Minha conta",
+      "minhaConta.email.label": "E-mail",
+      "minhaConta.utilizador.label": "Usuário",
+      "minhaConta.pin.label": "Novo PIN (4 dígitos, opcional)",
+      "minhaConta.pin.placeholder": "Deixe em branco para manter o atual",
+      "minhaConta.idioma.titulo": "Idioma",
+      "minhaConta.idioma.pt-PT": "Português de Portugal",
+      "minhaConta.idioma.pt-BR": "Português do Brasil",
+      "minhaConta.guardar": "Salvar alterações",
+      "minhaConta.aGuardar": "Salvando…",
+      "minhaConta.erro.emailInvalido": "Informe um e-mail válido.",
+      "minhaConta.erro.utilizadorObrigatorio": "Informe um usuário.",
+      "minhaConta.erro.pinInvalido": "O PIN precisa ter exatamente 4 dígitos.",
+      "minhaConta.erro.falhaUtilizador": "Falha ao atualizar usuário",
+      "minhaConta.erro.falhaConta": "Falha ao atualizar conta",
+      "minhaConta.erro.redeGenerico": "Erro de rede:",
+      "minhaConta.erro.semInternet": "Sem conexão com a internet.",
+      "minhaConta.sucesso": "Conta atualizada.",
+      "minhaConta.trocarConta": "Trocar de conta",
+      "minhaConta.confirmarSaida": "Sair desta conta? Os dados continuam salvos neste aparelho, mas você precisará entrar de novo para sincronizar.",
+      "minhaConta.editar": "Minha conta",
+
+      "sync.online": "ON-LINE",
+      "sync.offline": "OFF-LINE",
+      "sync.sincronizado": "🟢 Sincronizado com a nuvem. Seus dados estão disponíveis em qualquer aparelho onde você entrar com a mesma conta.",
+      "sync.aSincronizar": "🔴 Sincronizando (ou offline no momento) — os dados continuam salvos normalmente neste aparelho e serão enviados assim que houver internet.",
+      "sync.naoConfigurado": "Este app ainda está rodando só neste aparelho (sem login). Para sincronizar entre dispositivos, é preciso configurar o Supabase no arquivo — fale com quem mantém o app.",
+      "conta.sincronizacao.titulo": "Conta e sincronização",
+      "backup.titulo": "Armazenamento e backup",
+      "backup.texto": "Exporta todos os dados armazenados localmente (clientes, atendimentos, agenda, financeiro, documentos) em um arquivo JSON — use para levar seus dados a outro dispositivo/navegador ou como cópia de segurança.",
+      "backup.exportar": "Exportar backup (.json)",
+      "backup.importar": "Importar backup (.json)",
+      "backup.aviso": "Importar substitui os dados atuais das entidades presentes no arquivo. Recomendamos exportar um backup antes de importar.",
+
+      "comum.cancelar": "Cancelar",
+      "comum.salvar": "Salvar",
+      "comum.editar": "Editar",
+      "comum.excluir": "Excluir",
+      "comum.voltar": "Voltar",
+      "comum.ativo": "Ativo",
+      "comum.inativo": "Inativo",
+      "comum.todos": "Todos",
+      "comum.status": "Status",
+      "comum.observacoes": "Observações",
+      "comum.telefone": "Telefone",
+      "comum.email": "E-mail",
+      "comum.endereco": "Endereço",
+      "comum.semNome": "Sem nome",
+      "comum.opcional": "(opcional)",
+      "comum.anos": "anos",
+
+      "clientes.buscar": "Buscar",
+      "clientes.novo": "Novo",
+      "clientes.nenhumEncontrado": "Nenhum {singular} encontrado.",
+      "clientes.cadastrar": "Cadastrar",
+      "clientes.nomeCompleto": "Nome completo *",
+      "clientes.dataNascimento": "Data de nascimento",
+      "clientes.escolaInstituicao": "Escola / Instituição",
+      "clientes.profissao": "Profissão",
+      "clientes.dataInicio": "Data de início",
+      "clientes.editarTitulo": "Editar {singular}",
+      "clientes.novoTitulo": "Novo {singular}",
+      "clientes.informeNome": "Informe o nome.",
+      "clientes.cadastroAtualizado": "Cadastro atualizado.",
+      "clientes.clienteCadastrado": "Cliente cadastrado.",
+      "clientes.registroNaoEncontrado": "Registro não encontrado.",
+      "clientes.confirmarExclusao": "Excluir {nome}? Esta ação não pode ser desfeita.",
+      "clientes.registroExcluido": "Registro excluído.",
+      "clientes.tabPerfil": "Perfil",
+      "clientes.tabFinanceiro": "Financeiro",
+      "clientes.dadosContato": "Dados de contato",
+      "clientes.desde": "desde",
+      "clientes.responsavelLabel": "Responsável",
+
+      "dashboard.atendimentosHoje": "Atendimentos hoje",
+      "dashboard.agendadosParaHoje": "agendados para hoje",
+      "dashboard.nenhumAgendamentoHoje": "nenhum agendamento hoje",
+      "dashboard.proximos7dias": "Próximos 7 dias",
+      "dashboard.atendimentosAgendados": "atendimentos agendados",
+      "dashboard.ativos": "ativos",
+      "dashboard.novosUltimos30dias": "novos nos últimos 30 dias",
+      "dashboard.aReceber": "A receber",
+      "dashboard.pendencias": "pendência(s)",
+      "dashboard.agendaHoje": "Agenda de hoje",
+      "dashboard.verAgenda": "Ver agenda",
+      "dashboard.pendenciasFinanceiras": "Pendências financeiras",
+      "dashboard.verFinanceiro": "Ver financeiro",
+      "dashboard.evolucaoSemanal": "Evolução semanal de atendimentos",
+      "dashboard.nenhumAtendimentoHoje": "Nenhum atendimento agendado para hoje.",
+      "dashboard.nenhumaPendencia": "Nenhuma pendência financeira. Tudo em dia.",
+      "dashboard.lancamento": "Lançamento",
+      "dashboard.confirmado": "confirmado",
+
+      "timeline.registrar": "Registrar",
+      "timeline.nenhumRegistro": "Nenhum registro ainda. A evolução completa aparece aqui conforme os atendimentos forem lançados.",
+      "timeline.confirmarExclusao": "Excluir este registro da linha do tempo?",
+      "timeline.registroRemovido": "Registro removido.",
+      "timeline.sessao": "Sessão",
+      "timeline.objetivosSessao": "Objetivos da sessão",
+      "timeline.descricao": "Descrição",
+      "timeline.atividades": "Atividades",
+      "timeline.materiaisUtilizados": "Materiais utilizados",
+      "timeline.respostaObservada": "Resposta observada",
+      "timeline.proximosPassos": "Próximos passos",
+      "timeline.data": "Data *",
+      "timeline.hora": "Hora",
+      "timeline.duracaoMin": "Duração (min)",
+      "timeline.tipo": "Tipo",
+      "timeline.descricaoAtendimento": "Descrição do atendimento",
+      "timeline.editarRegistro": "Editar registro",
+      "timeline.informeData": "Informe a data.",
+      "timeline.registroSalvo": "Registro salvo na linha do tempo.",
+
+      "agenda.status.confirmado": "confirmado",
+      "agenda.status.realizado": "realizado",
+      "agenda.status.falta": "falta",
+      "agenda.status.cancelado": "cancelado",
+      "agenda.status.remarcado": "remarcado",
+      "agenda.novoAgendamento": "Novo agendamento",
+      "agenda.editarAgendamento": "Editar agendamento",
+      "agenda.agendamento": "agendamento",
+      "agenda.agendamentos": "agendamentos",
+      "agenda.nenhumNesteDia": "Nenhum agendamento neste dia.",
+      "agenda.fechar": "Fechar",
+      "agenda.hoje": "Hoje",
+      "agenda.titulo": "Título *",
+      "agenda.tituloPlaceholder": "Ex.: Sessão com {nome}",
+      "agenda.clienteGenerico": "cliente",
+      "agenda.opcional": "(opcional)",
+      "agenda.nenhum": "— nenhum —",
+      "agenda.data": "Data *",
+      "agenda.hora": "Hora",
+      "agenda.notas": "Notas",
+      "agenda.excluir": "Excluir",
+      "agenda.confirmarExclusao": "Excluir este agendamento?",
+      "agenda.agendamentoExcluido": "Agendamento excluído.",
+      "agenda.informeTituloData": "Informe título e data.",
+      "agenda.agendamentoSalvo": "Agendamento salvo.",
+
+      "financeiro.recebidoMes": "Recebido no mês",
+      "financeiro.despesasMes": "Despesas no mês",
+      "financeiro.lancamentos": "Lançamentos",
+      "financeiro.novoLancamento": "Novo lançamento",
+      "financeiro.editarLancamento": "Editar lançamento",
+      "financeiro.nenhumLancamento": "Nenhum lançamento registrado ainda.",
+      "financeiro.status.pendente": "pendente",
+      "financeiro.status.pago": "pago",
+      "financeiro.tipo": "Tipo",
+      "financeiro.receita": "Receita",
+      "financeiro.despesa": "Despesa",
+      "financeiro.categoria": "Categoria",
+      "financeiro.valor": "Valor (R$) *",
+      "financeiro.pendente": "Pendente",
+      "financeiro.pago": "Pago",
+      "financeiro.descricao": "Descrição",
+      "financeiro.excluir": "Excluir",
+      "financeiro.confirmarExclusao": "Excluir este lançamento?",
+      "financeiro.lancamentoExcluido": "Lançamento excluído.",
+      "financeiro.informeValorData": "Informe valor e data.",
+      "financeiro.lancamentoSalvo": "Lançamento salvo.",
+
+      "relatorios.gerarRelatorio": "Gerar relatório",
+      "relatorios.todos": "Todos os {plural}",
+      "relatorios.resumoCliente": "Resumo do cliente",
+      "relatorios.porPeriodo": "Relatório por período",
+      "relatorios.mensal": "Relatório mensal",
+      "relatorios.historicoCompleto": "Histórico completo",
+      "relatorios.de": "De",
+      "relatorios.ate": "Até",
+      "relatorios.exportarImprimir": "Exportar / Imprimir (PDF)",
+      "relatorios.recebido": "Recebido",
+      "relatorios.pendente": "Pendente",
+      "relatorios.data": "Data",
+      "relatorios.objetivos": "Objetivos",
+      "relatorios.nenhumNoPeriodo": "Nenhum atendimento no período selecionado.",
+      "relatorios.emitidoEm": "Emitido em",
+      "relatorios.periodo": "Período",
+      "relatorios.nenhumDado": "Nenhum dado encontrado para os filtros selecionados.",
+
+      "config.identidade": "Identidade do profissional",
+      "config.nomeProfissional": "Nome do profissional",
+      "config.especialidade": "Especialidade",
+      "config.corPrincipal": "Cor principal",
+      "config.salvarIdentidade": "Salvar identidade",
+      "config.terminologia": "Terminologia (rótulos do sistema)",
+      "config.nomeClienteSingular": "Nome do cliente (singular)",
+      "config.nomeClientePlural": "Nome do cliente (plural)",
+      "config.nomeAtendimentoSingular": "Nome do atendimento (singular)",
+      "config.nomeAtendimentoPlural": "Nome do atendimento (plural)",
+      "config.salvarTerminologia": "Salvar terminologia",
+      "config.terminologiaExplicacao": "É assim que a plataforma-base se adapta a cada profissão sem reconstruir o sistema.",
+      "config.tiposAtendimento": "Tipos de atendimento",
+      "config.novoTipo": "Novo tipo...",
+      "config.categoriasFinanceiras": "Categorias financeiras",
+      "config.novaCategoria": "Nova categoria...",
+      "config.identidadeAtualizada": "Identidade atualizada.",
+      "config.terminologiaAtualizada": "Terminologia atualizada.",
+      "config.backupExportado": "Backup exportado.",
+      "config.confirmarImportar": "Importar este backup vai SUBSTITUIR os dados atuais das entidades presentes no arquivo. Deseja continuar?",
+      "config.ficheiroInvalido": "Arquivo inválido: não é um JSON válido.",
+      "config.falhaImportar": "Não foi possível importar o backup.",
+      "config.backupImportado": "Backup importado com sucesso.",
+      "config.espacoUsado": "Espaço usado",
+      "config.espacoQuaseCheio": "Armazenamento quase cheio — exporte um backup e considere arquivar clientes inativos.",
+      "config.clienteDefault": "Cliente",
+      "config.clientesDefault": "Clientes",
+      "config.atendimentoDefault": "Atendimento",
+      "config.atendimentosDefault": "Atendimentos"
+    }
+  };
+
+  const I18n = (function () {
+    const KEY_IDIOMA = "elaAtendeIdioma"; // preferência do aparelho, não do perfil
+    const IDIOMAS_SUPORTADOS = ["pt-PT", "pt-BR"];
+    let atual = null;
+
+    function detetarIdiomaDispositivo() {
+      const candidatos = (typeof navigator !== "undefined" && navigator.languages && navigator.languages.length)
+        ? navigator.languages
+        : [(typeof navigator !== "undefined" && navigator.language) || "pt-BR"];
+      for (let i = 0; i < candidatos.length; i++) {
+        const c = String(candidatos[i]).toLowerCase();
+        if (c.indexOf("pt-br") === 0 || c === "pt_br") return "pt-BR";
+        if (c.indexOf("pt") === 0) return "pt-PT";
+      }
+      return "pt-BR";
+    }
+
+    function lerGuardado() {
+      try { return window.localStorage.getItem(KEY_IDIOMA); } catch (e) { return null; }
+    }
+    function gravar(idioma) {
+      try { window.localStorage.setItem(KEY_IDIOMA, idioma); } catch (e) {}
+    }
+
+    function obterIdioma() {
+      if (atual) return atual;
+      let guardado = lerGuardado();
+      if (!guardado || IDIOMAS_SUPORTADOS.indexOf(guardado) === -1) {
+        guardado = detetarIdiomaDispositivo();
+        gravar(guardado);
+      }
+      atual = guardado;
+      return atual;
+    }
+
+    function definirIdioma(idioma) {
+      if (IDIOMAS_SUPORTADOS.indexOf(idioma) === -1) return;
+      atual = idioma;
+      gravar(idioma);
+      aplicar();
+    }
+
+    function traduzir(chave, vars) {
+      const dic = TRADUCOES[obterIdioma()] || TRADUCOES["pt-BR"];
+      let texto = (dic && dic[chave]) || (TRADUCOES["pt-BR"][chave]) || chave;
+      if (vars) {
+        Object.keys(vars).forEach((k) => {
+          texto = texto.split("{" + k + "}").join(vars[k]);
+        });
+      }
+      return texto;
+    }
+    const t = traduzir;
+
+    function aplicar() {
+      if (typeof document === "undefined") return;
+      const elementos = document.querySelectorAll("[data-i18n]");
+      for (let i = 0; i < elementos.length; i++) {
+        elementos[i].textContent = t(elementos[i].getAttribute("data-i18n"));
+      }
+      const placeholders = document.querySelectorAll("[data-i18n-placeholder]");
+      for (let i = 0; i < placeholders.length; i++) {
+        placeholders[i].setAttribute("placeholder", t(placeholders[i].getAttribute("data-i18n-placeholder")));
+      }
+    }
+
+    return { IDIOMAS_SUPORTADOS, obterIdioma, definirIdioma, traduzir, t, aplicar };
+  })();
+
+  global.RS = global.RS || {};
+  global.RS.I18n = I18n;
+})(window);
+
+
 /* ---- js/storage.js ---- */
 /**
  * RS.storage — Camada de persistência isolada.
@@ -1162,9 +1790,8 @@ a { color: inherit; text-decoration: none; }
 
 /* ---- js/gate.js ---- */
 /**
- * RS.gate — Tela de login (e-mail + usuário + PIN), mesmo padrão do
- * ela.organiza. Só aparece quando o Supabase está configurado (ver
- * sync.js) — sem credenciais, o app pula direto para o modo local.
+ * RS.gate — Tela de login (e-mail + usuario + PIN), com suporte a
+ * i18n (PT-PT / PT-BR). So aparece quando o Supabase esta configurado.
  */
 (function (global) {
   "use strict";
@@ -1195,6 +1822,7 @@ a { color: inherit; text-decoration: none; }
   }
 
   function render() {
+    const t = RS.I18n.t;
     const wrap = document.createElement("div");
     wrap.id = "rs-gate-overlay";
     wrap.className = "rs-gate-overlay";
@@ -1202,35 +1830,37 @@ a { color: inherit; text-decoration: none; }
       <div class="rs-gate-card">
         <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABEwAAAENCAMAAAAi4wDmAAAA/1BMVEXq39vfoZmrbntmcaeXlKvikH3JqOOqr9WVbY3kx6l5ls01Ojpgbcf37fTQfZo+UVO6yOdUYF99lLc3QD45PkC4wL52gH7DenqCfdf///9HWFr77a/0+PdidMzTgaVCTE3wqam7pfeBnc88R0hdc8tudnfQ19fo6exXY2SnaY6PlpfijoJ9nNCwt7fFystOXWDbw6ukqqtjamvb4+hxgqiEiox6hIeIos/w9fCao6a7w8b68K6sc4Zqd7HUhpPVfqQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC5vQFMAAAAQHRSTlP/////////////////eP//////////////AP//eP//////////////////////////////////////////////l135oAAAa0hJREFUeNrtnQljmzjbrvHYE6dZmrbTeb9jRimdEJbSAgMEbJw6/f//6mhHAgECO11SadZmsTFIl+5nlbUxwwwzzDjBsMwtMMMMMwxMzDDDDAMTM8www8DEDDPMMMPAxAwzzDAwMcMMMwxMzDDDDAMTM8wwwwwDEzPMMOO3gQkA5iGYYYaBiRlmmGGGgYkZZphhYGKGGWYYmLQHCCw8gmvzMMwww8Bk9rgOFnB8/Ij+bRmcmGGGgckMRYICOQBypBkLy0R2zDDDwGQyTCA4LIklmCYGJ2aYYWAyeQSv2jAx2sQMMwxM5rz3ogOThYGJGWYYmEy1c6CRI8Bkgf9ZmFC1GWYYmBwtTDBTTEjHDDMMTKYJE6BACRxGmphhhoHJxHf+aGBihhkGJiexcpDHtQOTM/NMzDDDwGSyMlE5TcwzMcMMA5PJyuSjgYkZZhiYnEKZKEZinokZZhiYnEKZGAesGWYYmEwb1wYmZphhYHKKAZR2jklaM8MMA5OpI1AEhk06vRlmGJjMkCZSaQ7+ywrMIzHDDAOTydJELPXDLFkYlphhxm8Pkzm9AwI5omPamZhhhoEJ4clkFEg0MTaOGWYYmMhIQWNXFBYdRbHbAQoaAGTiAOtsgbtJm4bSZphhYCKjZFdY+/W6XuHxbsVGvV7vrWLXhok56sIMMwxM2hTBINmvt9u71equ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" alt="Rota Singular" style="display:block; max-width:220px; width:70%; height:auto; margin:0 auto 16px; background:transparent;">
         <div class="rs-gate-brand">ela.<span class="rs-wordmark-italic">atende</span></div>
-        <p class="rs-gate-sub">Entre com seu e-mail, usuário e PIN. Se ainda não tiver conta, ela é criada automaticamente.</p>
+        <p class="rs-gate-sub" data-i18n="gate.subtitulo">${t("gate.subtitulo")}</p>
         <form id="rs-gate-form">
-          <div class="rs-field"><input type="email" class="rs-input" id="gate-email" placeholder="seu@email.com" required autocomplete="email"></div>
+          <div class="rs-field"><input type="email" class="rs-input" id="gate-email" placeholder="${t("gate.email.placeholder")}" data-i18n-placeholder="gate.email.placeholder" required autocomplete="email"></div>
           <div class="rs-field">
             <div style="display:flex; align-items:center; gap:0;">
               <span class="rs-gate-prefix">ela.</span>
-              <input class="rs-input" id="gate-user" placeholder="usuário" style="border-radius:0 10px 10px 0;" required autocomplete="username">
+              <input class="rs-input" id="gate-user" placeholder="${t("gate.utilizador.placeholder")}" data-i18n-placeholder="gate.utilizador.placeholder" style="border-radius:0 10px 10px 0;" required autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
             </div>
           </div>
-          <div class="rs-field"><input type="password" class="rs-input" id="gate-pin" placeholder="PIN (4 dígitos)" inputmode="numeric" pattern="[0-9]*" maxlength="4" required autocomplete="off"></div>
+          <div class="rs-field"><input type="password" class="rs-input" id="gate-pin" placeholder="${t("gate.pin.placeholder")}" data-i18n-placeholder="gate.pin.placeholder" inputmode="numeric" pattern="[0-9]*" maxlength="4" required autocomplete="off"></div>
           <p id="rs-gate-error" class="rs-gate-error" style="display:none;"></p>
-          <button type="submit" class="rs-btn rs-btn-primary" id="rs-gate-submit" style="width:100%; justify-content:center;">Entrar</button>
+          <button type="submit" class="rs-btn rs-btn-primary" id="rs-gate-submit" style="width:100%; justify-content:center;" data-i18n="gate.entrar">${t("gate.entrar")}</button>
           <p id="rs-gate-status" class="rs-gate-status" style="display:none;"></p>
         </form>
         <form id="rs-gate-pin-troca" style="display:none;">
-          <p class="rs-gate-sub">Este PIN é temporário. Defina um novo PIN de 4 dígitos, só seu, para continuar.</p>
-          <div class="rs-field"><input type="password" class="rs-input" id="gate-pin-novo" placeholder="Novo PIN (4 dígitos)" inputmode="numeric" maxlength="4"></div>
-          <div class="rs-field"><input type="password" class="rs-input" id="gate-pin-confirma" placeholder="Confirme o novo PIN" inputmode="numeric" maxlength="4"></div>
+          <p class="rs-gate-sub" data-i18n="gate.pinTroca.subtitulo">${t("gate.pinTroca.subtitulo")}</p>
+          <div class="rs-field"><input type="password" class="rs-input" id="gate-pin-novo" placeholder="${t("gate.pinTroca.novoPin.placeholder")}" data-i18n-placeholder="gate.pinTroca.novoPin.placeholder" inputmode="numeric" maxlength="4"></div>
+          <div class="rs-field"><input type="password" class="rs-input" id="gate-pin-confirma" placeholder="${t("gate.pinTroca.confirmarPin.placeholder")}" data-i18n-placeholder="gate.pinTroca.confirmarPin.placeholder" inputmode="numeric" maxlength="4"></div>
           <p id="rs-gate-troca-error" class="rs-gate-error" style="display:none;"></p>
-          <button type="submit" class="rs-btn rs-btn-primary" style="width:100%; justify-content:center;">Definir novo PIN</button>
+          <button type="submit" class="rs-btn rs-btn-primary" style="width:100%; justify-content:center;" data-i18n="gate.pinTroca.submeter">${t("gate.pinTroca.submeter")}</button>
         </form>
-        <button type="button" class="rs-gate-forgot" id="rs-gate-forgot">Esqueci o PIN</button>
+        <button type="button" class="rs-gate-forgot" id="rs-gate-forgot" data-i18n="gate.esqueciPin">${t("gate.esqueciPin")}</button>
       </div>
     `;
     document.body.appendChild(wrap);
+    RS.I18n.aplicar();
     wire(wrap);
   }
 
   function wire(wrap) {
+    const t = RS.I18n.t;
     const form = wrap.querySelector("#rs-gate-form");
     const errorEl = wrap.querySelector("#rs-gate-error");
     const statusEl = wrap.querySelector("#rs-gate-status");
@@ -1242,7 +1872,7 @@ a { color: inherit; text-decoration: none; }
       errorEl.style.display = "block";
       statusEl.style.display = "none";
       submitBtn.disabled = false;
-      submitBtn.textContent = "Entrar";
+      submitBtn.textContent = t("gate.entrar");
     }
     function mostrarStatus(msg) {
       statusEl.textContent = msg;
@@ -1251,7 +1881,7 @@ a { color: inherit; text-decoration: none; }
     }
 
     wrap.querySelector("#rs-gate-forgot").addEventListener("click", () => {
-      alert("Entre em contato com o suporte da Rota Soluções para redefinir seu PIN.");
+      alert(t("gate.esqueciPin.mensagem"));
     });
 
     form.addEventListener("submit", (ev) => {
@@ -1261,65 +1891,61 @@ a { color: inherit; text-decoration: none; }
       const usuario = sufixo ? "ela." + sufixo : "";
       const pin = (wrap.querySelector("#gate-pin").value || "").trim();
 
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { mostrarErro("Informe um e-mail válido."); return; }
-      if (!usuario) { mostrarErro("Informe um usuário."); return; }
-      if (!/^\d{4}$/.test(pin)) { mostrarErro("O PIN precisa ter exatamente 4 dígitos."); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { mostrarErro(t("gate.erro.emailInvalido")); return; }
+      if (!usuario) { mostrarErro(t("gate.erro.utilizadorObrigatorio")); return; }
+      if (!/^\d{4}$/.test(pin)) { mostrarErro(t("gate.erro.pinInvalido")); return; }
 
       const senha = "ela-pin-" + pin;
       submitBtn.disabled = true;
-      submitBtn.textContent = "Um momento...";
-      mostrarStatus("Verificando...");
+      submitBtn.textContent = t("gate.aentrar");
+      mostrarStatus(t("gate.status.verificando"));
 
       RS.syncLoadSupabase((client) => {
         client.rpc("username_existe", { p_label: usuario }).then((resp) => {
-          if (resp.error) { mostrarErro("Falha no servidor (" + resp.error.message + ")."); return; }
+          if (resp.error) { mostrarErro(t("gate.erro.falhaServidor") + " (" + resp.error.message + ")."); return; }
           if (!resp.data) {
             client.auth.signUp({ email, password: senha }).then((res) => {
               function gravarPerfil(uidReal) {
                 client.from("profiles").upsert({ id: uidReal, label: usuario }).then((ins) => {
-                  if (ins.error) { mostrarErro("Falha ao salvar perfil (" + ins.error.message + ")."); return; }
+                  if (ins.error) { mostrarErro(t("gate.erro.falhaGuardarPerfil") + " (" + ins.error.message + ")."); return; }
                   iniciarApp(uidReal, usuario, email);
-                }).catch((e) => mostrarErro("Erro de rede: " + e.message));
+                }).catch((e) => mostrarErro(t("gate.erro.redeGenerico") + " " + e.message));
               }
               function tentarEntrarDireto() {
-                mostrarStatus("Concluindo autenticação...");
+                mostrarStatus(t("gate.status.concluindoAutenticacao"));
                 client.auth.signInWithPassword({ email, password: senha }).then((loginRes) => {
                   if (loginRes.error || !loginRes.data || !loginRes.data.session || !loginRes.data.user) {
-                    mostrarErro("Este e-mail já tem conta com outro PIN, ou a conta ainda não foi confirmada. Usa \"Esqueci o PIN\" se for o caso.");
+                    mostrarErro(t("gate.erro.contaPendente"));
                     return;
                   }
                   gravarPerfil(loginRes.data.user.id);
-                }).catch((e) => mostrarErro("Erro de rede: " + e.message));
+                }).catch((e) => mostrarErro(t("gate.erro.redeGenerico") + " " + e.message));
               }
-              // Se a conta já existir no Supabase (mesmo sem perfil gravado
-              // ainda, por causa de uma tentativa anterior que falhou),
-              // o signUp devolve erro ou vem sem sessão — nos dois casos,
-              // tenta entrar direto com o que a pessoa digitou, em vez de
-              // travar aqui.
               if (res.data && res.data.session && res.data.user) { gravarPerfil(res.data.user.id); return; }
               tentarEntrarDireto();
-            }).catch((e) => mostrarErro("Erro de rede: " + e.message));
+            }).catch((e) => mostrarErro(t("gate.erro.redeGenerico") + " " + e.message));
           } else {
             client.auth.signInWithPassword({ email, password: senha }).then((res) => {
-              if (res.error || !res.data || !res.data.user) { mostrarErro("E-mail, usuário ou PIN incorretos."); return; }
+              if (res.error || !res.data || !res.data.user) { mostrarErro(t("gate.erro.credenciaisInvalidas")); return; }
               const uid = res.data.user.id;
               client.from("profiles").select("label, pin_temporario").eq("id", uid).single().then((prof) => {
                 const label = (prof.data && prof.data.label) || usuario;
                 if (prof.data && prof.data.pin_temporario) {
-                  submitBtn.disabled = false; submitBtn.textContent = "Entrar";
+                  submitBtn.disabled = false; submitBtn.textContent = t("gate.entrar");
                   pedirTrocaPin(wrap, client, uid, label, email, trocaForm);
                   return;
                 }
                 iniciarApp(uid, label, email);
-              }).catch((e) => mostrarErro("Erro de rede: " + e.message));
-            }).catch((e) => mostrarErro("Erro de rede: " + e.message));
+              }).catch((e) => mostrarErro(t("gate.erro.redeGenerico") + " " + e.message));
+            }).catch((e) => mostrarErro(t("gate.erro.redeGenerico") + " " + e.message));
           }
-        }).catch((e) => mostrarErro("Erro de rede: " + e.message));
-      }, () => mostrarErro("Sem conexão com a internet."));
+        }).catch((e) => mostrarErro(t("gate.erro.redeGenerico") + " " + e.message));
+      }, () => mostrarErro(t("gate.erro.semInternet")));
     });
   }
 
   function pedirTrocaPin(wrap, client, uid, label, email, trocaForm) {
+    const t = RS.I18n.t;
     wrap.querySelector("#rs-gate-form").style.display = "none";
     trocaForm.style.display = "block";
     trocaForm.onsubmit = (ev) => {
@@ -1328,21 +1954,22 @@ a { color: inherit; text-decoration: none; }
       const confirma = (wrap.querySelector("#gate-pin-confirma").value || "").trim();
       const errEl = wrap.querySelector("#rs-gate-troca-error");
       function err(msg) { errEl.textContent = msg; errEl.style.display = "block"; }
-      if (!/^\d{4}$/.test(novo)) { err("O novo PIN precisa ter 4 dígitos."); return; }
-      if (novo !== confirma) { err("Os dois PINs não coincidem."); return; }
+      if (!/^\d{4}$/.test(novo)) { err(t("gate.pinTroca.erro.pinInvalido")); return; }
+      if (novo !== confirma) { err(t("gate.pinTroca.erro.naoCoincidem")); return; }
       errEl.style.display = "none";
       client.auth.updateUser({ password: "ela-pin-" + novo }).then((upd) => {
-        if (upd.error) { err("Não foi possível definir o novo PIN (" + upd.error.message + ")."); return; }
+        if (upd.error) { err(t("gate.pinTroca.erro.falhaDefinir") + " (" + upd.error.message + ")."); return; }
         client.from("profiles").update({ pin_temporario: false }).eq("id", uid).then((prof) => {
-          if (prof.error) { err("PIN atualizado, mas houve um problema ao concluir (" + prof.error.message + ")."); return; }
+          if (prof.error) { err(t("gate.pinTroca.erro.falhaConcluir") + " (" + prof.error.message + ")."); return; }
           iniciarApp(uid, label, email);
-        }).catch((e) => err("Erro de rede: " + e.message));
-      }).catch((e) => err("Erro de rede: " + e.message));
+        }).catch((e) => err(t("gate.erro.redeGenerico") + " " + e.message));
+      }).catch((e) => err(t("gate.erro.redeGenerico") + " " + e.message));
     };
   }
 
   RS.gate = { render, limparContaAtiva, contaAtivaSalva };
 })(window);
+
 
 
 /* ---- js/config.js ---- */
@@ -1453,7 +2080,7 @@ a { color: inherit; text-decoration: none; }
     wallet: '<rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.2"/>',
     folder: '<path d="M3.5 7a2 2 0 0 1 2-2h4l2 2.2h7a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/>',
     chart: '<path d="M4 20V10M11 20V4M18 20v-7"/>',
-    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.7 1.7 0 0 0 .3 1.9l.06.07a2 2 0 1 1-2.9 2.9l-.07-.06a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V19a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.07.06a2 2 0 1 1-2.9-2.9l.06-.07a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.06-.07a2 2 0 1 1 2.9-2.9l.07.06a1.7 1.7 0 0 0 1.9.3H10a1.7 1.7 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.07-.06a2 2 0 1 1 2.9 2.9l-.06.07a1.7 1.7 0 0 0-.3 1.9V10a1.7 1.7 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
+    settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     edit: '<path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M14 6l4 4"/>',
     trash: '<path d="M4.5 7h15M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2M18 7l-.7 12a2 2 0 0 1-2 1.9H8.7a2 2 0 0 1-2-1.9L6 7"/>',
@@ -1505,7 +2132,6 @@ a { color: inherit; text-decoration: none; }
     { id: "clientes", icon: "users" },
     { id: "agenda", icon: "calendar" },
     { id: "financeiro", icon: "wallet" },
-    { id: "documentos", icon: "folder" },
     { id: "relatorios", icon: "chart" },
     { id: "configuracoes", icon: "settings" },
   ];
@@ -1640,14 +2266,32 @@ a { color: inherit; text-decoration: none; }
       const content = document.getElementById("rs-content");
       content.innerHTML = "";
       content.scrollTop = 0;
-      mod.render(content, param);
+      try {
+        mod.render(content, param);
+      } catch (e) {
+        console.error("[render] falha ao desenhar a tela '" + id + "':", e);
+        content.innerHTML = `
+          <div class="rs-card" style="max-width:520px; margin:40px auto; text-align:center;">
+            <div class="rs-section-title">Algo deu errado nesta tela</div>
+            <p style="font-size:13px; color:var(--rs-ink-soft); margin-bottom:16px;">
+              Não foi possível carregar "${mod.label || id}". Os seus dados continuam salvos — isto é só um problema ao exibir esta tela.
+            </p>
+            <button class="rs-btn rs-btn-primary" id="rs-error-home">${RS.icon("grid", 14)} Voltar ao painel</button>
+          </div>`;
+        const btn = document.getElementById("rs-error-home");
+        if (btn) btn.addEventListener("click", () => router.navigate("dashboard"));
+      }
       closeMobileNav();
     },
   };
 
   function renderTopbar(mod) {
-    document.getElementById("rs-topbar-title").textContent = mod.label;
-    document.getElementById("rs-topbar-sub").textContent = mod.subtitle || "";
+    const titleEl = document.getElementById("rs-topbar-title");
+    const subEl = document.getElementById("rs-topbar-sub");
+    titleEl.textContent = mod.label;
+    subEl.textContent = mod.subtitle || "";
+    if (mod.i18nKey) { titleEl.setAttribute("data-i18n", mod.i18nKey); } else { titleEl.removeAttribute("data-i18n"); }
+    if (mod.i18nSubtitleKey) { subEl.setAttribute("data-i18n", mod.i18nSubtitleKey); } else { subEl.removeAttribute("data-i18n"); }
   }
 
   function renderNavState(activeId) {
@@ -1704,7 +2348,7 @@ a { color: inherit; text-decoration: none; }
       if (!mod) return;
       const btn = util.el(`
         <button class="rs-nav-item" data-route="${item.id}">
-          ${RS.icon(item.icon, 18)}<span>${mod.label}</span>
+          ${RS.icon(item.icon, 18)}<span${mod.i18nKey ? ` data-i18n="${mod.i18nKey}"` : ""}>${mod.label}</span>
         </button>
       `);
       btn.addEventListener("click", () => router.navigate(item.id));
@@ -1770,7 +2414,7 @@ a { color: inherit; text-decoration: none; }
     let saved = null;
     try { saved = JSON.parse(window.localStorage.getItem(ACTIVE_ACCOUNT_KEY) || "null"); } catch (e) {}
     if (saved && saved.userId) {
-      storage.setAccountNamespace(saved.userId, true);
+      RS.storage.setAccountNamespace(saved.userId, true);
       RS.sync.iniciar(saved.userId);
       startApp();
       RS.sync.sincronizarTudo(() => { router.resolve(); });
@@ -1830,6 +2474,7 @@ a { color: inherit; text-decoration: none; }
   }
 
   function render(container) {
+    const t = RS.I18n.t;
     const s = computeStats();
     const cfg = RS.config;
     const nomeCliente = cfg.labels.cliente_plural;
@@ -1846,29 +2491,29 @@ a { color: inherit; text-decoration: none; }
         <span class="rs-badge rs-badge-gray" style="font-weight:700;">ela.${idSlug}</span>
       </div>
       <div class="rs-grid rs-grid-4" style="margin-bottom:18px;">
-        ${statCard("clock", "blue", "Atendimentos hoje", s.hojeAgenda.length, s.hojeAgenda.length ? "agendados para hoje" : "nenhum agendamento hoje")}
-        ${statCard("calendar", "lilac", "Próximos 7 dias", s.proximos.length, "atendimentos agendados")}
-        ${statCard("users", "pink", nomeCliente + " ativos", s.clientesAtivos.length, s.novos.length + " novos nos últimos 30 dias")}
-        ${statCard("wallet", "yellow", "A receber", util.formatCurrency(s.aReceber), s.pendencias.length + " pendência(s)")}
+        ${statCard("clock", "blue", t("dashboard.atendimentosHoje"), s.hojeAgenda.length, s.hojeAgenda.length ? t("dashboard.agendadosParaHoje") : t("dashboard.nenhumAgendamentoHoje"))}
+        ${statCard("calendar", "lilac", t("dashboard.proximos7dias"), s.proximos.length, t("dashboard.atendimentosAgendados"))}
+        ${statCard("users", "pink", nomeCliente + " " + t("dashboard.ativos"), s.clientesAtivos.length, s.novos.length + " " + t("dashboard.novosUltimos30dias"))}
+        ${statCard("wallet", "yellow", t("dashboard.aReceber"), util.formatCurrency(s.aReceber), s.pendencias.length + " " + t("dashboard.pendencias"))}
       </div>
 
       <div class="rs-grid rs-grid-2" style="align-items:start; margin-bottom:18px;">
         <div class="rs-card">
-          <div class="rs-section-title">Agenda de hoje
-            <button class="rs-btn rs-btn-subtle" data-go="agenda">Ver agenda ${RS.icon("arrowRight", 14)}</button>
+          <div class="rs-section-title">${t("dashboard.agendaHoje")}
+            <button class="rs-btn rs-btn-subtle" data-go="agenda">${t("dashboard.verAgenda")} ${RS.icon("arrowRight", 14)}</button>
           </div>
           ${listAgendaHoje(s.hojeAgenda)}
         </div>
         <div class="rs-card">
-          <div class="rs-section-title">Pendências financeiras
-            <button class="rs-btn rs-btn-subtle" data-go="financeiro">Ver financeiro ${RS.icon("arrowRight", 14)}</button>
+          <div class="rs-section-title">${t("dashboard.pendenciasFinanceiras")}
+            <button class="rs-btn rs-btn-subtle" data-go="financeiro">${t("dashboard.verFinanceiro")} ${RS.icon("arrowRight", 14)}</button>
           </div>
           ${listPendencias(s.pendencias)}
         </div>
       </div>
 
       <div class="rs-card">
-        <div class="rs-section-title">Evolução semanal de atendimentos</div>
+        <div class="rs-section-title">${t("dashboard.evolucaoSemanal")}</div>
         <div style="display:flex; align-items:flex-end; gap:10px; height:120px; padding-top:10px;">
           ${week
             .map(
@@ -1897,7 +2542,8 @@ a { color: inherit; text-decoration: none; }
   }
 
   function listAgendaHoje(items) {
-    if (!items.length) return emptyState("calendar", "Nenhum atendimento agendado para hoje.");
+    const t = RS.I18n.t;
+    if (!items.length) return emptyState("calendar", t("dashboard.nenhumAtendimentoHoje"));
     return items
       .sort((a, b) => new Date(a.data) - new Date(b.data))
       .map(
@@ -1908,14 +2554,15 @@ a { color: inherit; text-decoration: none; }
           <div style="font-weight:600; font-size:13.5px;">${RS.util.escapeHtml(e.titulo)}</div>
           <div style="font-size:12px; color:var(--rs-ink-faint);">${new Date(e.data).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
         </div>
-        <span class="rs-badge rs-badge-blue">${e.status || "confirmado"}</span>
+        <span class="rs-badge rs-badge-blue">${RS.I18n.t("agenda.status." + (e.status || "confirmado"))}</span>
       </div>`
       )
       .join("");
   }
 
   function listPendencias(items) {
-    if (!items.length) return emptyState("wallet", "Nenhuma pendência financeira. Tudo em dia.");
+    const t = RS.I18n.t;
+    if (!items.length) return emptyState("wallet", t("dashboard.nenhumaPendencia"));
     return items
       .slice(0, 6)
       .map(
@@ -1923,7 +2570,7 @@ a { color: inherit; text-decoration: none; }
       <div class="rs-list-row">
         <div class="rs-avatar">${RS.icon("wallet", 16)}</div>
         <div style="flex:1;">
-          <div style="font-weight:600; font-size:13.5px;">${RS.util.escapeHtml(f.descricao || f.categoria || "Lançamento")}</div>
+          <div style="font-weight:600; font-size:13.5px;">${RS.util.escapeHtml(f.descricao || f.categoria || t("dashboard.lancamento"))}</div>
           <div style="font-size:12px; color:var(--rs-ink-faint);">${RS.util.formatDate(f.data)}</div>
         </div>
         <span class="rs-mono" style="font-weight:650; font-size:13px;">${RS.util.formatCurrency(f.valor)}</span>
@@ -1937,9 +2584,8 @@ a { color: inherit; text-decoration: none; }
   }
 
   RS.modules = RS.modules || {};
-  RS.modules.dashboard = { id: "dashboard", label: "Meu painel", subtitle: "Seus atendimentos, organizados.", render };
+  RS.modules.dashboard = { id: "dashboard", i18nKey: "nav.dashboard", i18nSubtitleKey: "shell.dashboard.subtitulo", get label() { return RS.I18n.t("nav.dashboard"); }, get subtitle() { return RS.I18n.t("shell.dashboard.subtitulo"); }, render };
 })(window);
-
 
 /* ---- js/modules/clientes.js ---- */
 (function (global) {
@@ -1970,18 +2616,19 @@ a { color: inherit; text-decoration: none; }
 
   function renderList(container) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     container.innerHTML = `
       <div style="display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
         <div style="position:relative; flex:1; min-width:220px;">
           <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--rs-ink-faint);">${RS.icon("search", 15)}</span>
-          <input class="rs-input" id="rs-cli-search" style="padding-left:34px;" placeholder="Buscar ${cfg.labels.cliente_plural.toLowerCase()}..." value="${util.escapeHtml(searchTerm)}">
+          <input class="rs-input" id="rs-cli-search" style="padding-left:34px;" placeholder="${t("clientes.buscar")} ${cfg.labels.cliente_plural.toLowerCase()}..." value="${util.escapeHtml(searchTerm)}">
         </div>
         <select class="rs-select" id="rs-cli-filter" style="max-width:160px;">
-          <option value="todos" ${statusFilter === "todos" ? "selected" : ""}>Todos</option>
-          <option value="ativo" ${statusFilter === "ativo" ? "selected" : ""}>Ativos</option>
-          <option value="inativo" ${statusFilter === "inativo" ? "selected" : ""}>Inativos</option>
+          <option value="todos" ${statusFilter === "todos" ? "selected" : ""}>${t("comum.todos")}</option>
+          <option value="ativo" ${statusFilter === "ativo" ? "selected" : ""}>${t("comum.ativo")}</option>
+          <option value="inativo" ${statusFilter === "inativo" ? "selected" : ""}>${t("comum.inativo")}</option>
         </select>
-        <button class="rs-btn rs-btn-primary" id="rs-cli-new">${RS.icon("plus", 15)} Novo ${cfg.labels.cliente_singular.toLowerCase()}</button>
+        <button class="rs-btn rs-btn-primary" id="rs-cli-new">${RS.icon("plus", 15)} ${t("clientes.novo")} ${cfg.labels.cliente_singular.toLowerCase()}</button>
       </div>
       <div class="rs-card" id="rs-cli-list"></div>
     `;
@@ -2007,8 +2654,8 @@ a { color: inherit; text-decoration: none; }
         items = items.filter((c) => (c.nome || "").toLowerCase().includes(q) || (c.responsavel || "").toLowerCase().includes(q));
       }
       if (!items.length) {
-        listEl.innerHTML = `<div class="rs-empty">${RS.icon("users", 36)}<p>Nenhum ${cfg.labels.cliente_singular.toLowerCase()} encontrado.</p>
-          <button class="rs-btn rs-btn-primary" id="rs-cli-empty-new">${RS.icon("plus", 14)} Cadastrar ${cfg.labels.cliente_singular.toLowerCase()}</button></div>`;
+        listEl.innerHTML = `<div class="rs-empty">${RS.icon("users", 36)}<p>${t("clientes.nenhumEncontrado", { singular: cfg.labels.cliente_singular.toLowerCase() })}</p>
+          <button class="rs-btn rs-btn-primary" id="rs-cli-empty-new">${RS.icon("plus", 14)} ${t("clientes.cadastrar")} ${cfg.labels.cliente_singular.toLowerCase()}</button></div>`;
         listEl.querySelector("#rs-cli-empty-new").addEventListener("click", () => openForm());
         return;
       }
@@ -2020,15 +2667,16 @@ a { color: inherit; text-decoration: none; }
   }
 
   function rowHtml(c) {
+    const t = RS.I18n.t;
     const a = age(c.dataNascimento);
     return `
       <div class="rs-list-row" data-open="${c.id}">
         <div class="rs-avatar">${util.initials(c.nome)}</div>
         <div style="flex:1; min-width:0;">
-          <div style="font-weight:600; font-size:13.5px;">${util.escapeHtml(c.nome || "Sem nome")}</div>
-          <div style="font-size:12px; color:var(--rs-ink-faint);">${a != null ? a + " anos · " : ""}${util.escapeHtml(c.profissao || c.escola || "")}</div>
+          <div style="font-weight:600; font-size:13.5px;">${util.escapeHtml(c.nome || t("comum.semNome"))}</div>
+          <div style="font-size:12px; color:var(--rs-ink-faint);">${a != null ? a + " " + t("comum.anos") + " · " : ""}${util.escapeHtml(c.profissao || c.escola || "")}</div>
         </div>
-        <span class="rs-badge ${c.status === "inativo" ? "rs-badge-gray" : "rs-badge-blue"}">${c.status === "inativo" ? "Inativo" : "Ativo"}</span>
+        <span class="rs-badge ${c.status === "inativo" ? "rs-badge-gray" : "rs-badge-blue"}">${c.status === "inativo" ? t("comum.inativo") : t("comum.ativo")}</span>
         ${RS.icon("chevronRight", 16)}
       </div>`;
   }
@@ -2036,46 +2684,47 @@ a { color: inherit; text-decoration: none; }
   // ---------------------------------------------------------------- FORM
   function openForm(existing) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     const c = existing || {};
     const bodyHtml = `
-      <div class="rs-field"><label>Nome completo *</label><input class="rs-input" id="f-nome" value="${util.escapeHtml(c.nome || "")}" required></div>
+      <div class="rs-field"><label>${t("clientes.nomeCompleto")}</label><input class="rs-input" id="f-nome" value="${util.escapeHtml(c.nome || "")}" required></div>
       <div class="rs-field-row">
-        <div class="rs-field"><label>Data de nascimento</label><input type="date" class="rs-input" id="f-dob" value="${c.dataNascimento || ""}"></div>
+        <div class="rs-field"><label>${t("clientes.dataNascimento")}</label><input type="date" class="rs-input" id="f-dob" value="${c.dataNascimento || ""}"></div>
         <div class="rs-field"><label>${util.escapeHtml(cfg.labels.responsavel)}</label><input class="rs-input" id="f-resp" value="${util.escapeHtml(c.responsavel || "")}"></div>
       </div>
       <div class="rs-field-row">
-        <div class="rs-field"><label>Telefone</label><input class="rs-input" id="f-tel" value="${util.escapeHtml(c.telefone || "")}"></div>
+        <div class="rs-field"><label>${t("comum.telefone")}</label><input class="rs-input" id="f-tel" value="${util.escapeHtml(c.telefone || "")}"></div>
         <div class="rs-field"><label>WhatsApp</label><input class="rs-input" id="f-whats" value="${util.escapeHtml(c.whatsapp || "")}"></div>
       </div>
-      <div class="rs-field"><label>E-mail</label><input type="email" class="rs-input" id="f-email" value="${util.escapeHtml(c.email || "")}"></div>
-      <div class="rs-field"><label>Endereço</label><input class="rs-input" id="f-end" value="${util.escapeHtml(c.endereco || "")}"></div>
+      <div class="rs-field"><label>${t("comum.email")}</label><input type="email" class="rs-input" id="f-email" value="${util.escapeHtml(c.email || "")}"></div>
+      <div class="rs-field"><label>${t("comum.endereco")}</label><input class="rs-input" id="f-end" value="${util.escapeHtml(c.endereco || "")}"></div>
       <div class="rs-field-row">
-        <div class="rs-field"><label>Escola / Instituição</label><input class="rs-input" id="f-escola" value="${util.escapeHtml(c.escola || "")}"></div>
-        <div class="rs-field"><label>Profissão</label><input class="rs-input" id="f-prof" value="${util.escapeHtml(c.profissao || "")}"></div>
+        <div class="rs-field"><label>${t("clientes.escolaInstituicao")}</label><input class="rs-input" id="f-escola" value="${util.escapeHtml(c.escola || "")}"></div>
+        <div class="rs-field"><label>${t("clientes.profissao")}</label><input class="rs-input" id="f-prof" value="${util.escapeHtml(c.profissao || "")}"></div>
       </div>
-      <div class="rs-field"><label>${util.escapeHtml(cfg.labels.diagnostico)} (opcional)</label><textarea class="rs-textarea" id="f-diag">${util.escapeHtml(c.diagnostico || "")}</textarea></div>
+      <div class="rs-field"><label>${util.escapeHtml(cfg.labels.diagnostico)} ${t("comum.opcional")}</label><textarea class="rs-textarea" id="f-diag">${util.escapeHtml(c.diagnostico || "")}</textarea></div>
       <div class="rs-field"><label>${util.escapeHtml(cfg.labels.objetivos)}</label><textarea class="rs-textarea" id="f-obj">${util.escapeHtml(c.objetivos || "")}</textarea></div>
-      <div class="rs-field"><label>Observações</label><textarea class="rs-textarea" id="f-obs">${util.escapeHtml(c.observacoes || "")}</textarea></div>
+      <div class="rs-field"><label>${t("comum.observacoes")}</label><textarea class="rs-textarea" id="f-obs">${util.escapeHtml(c.observacoes || "")}</textarea></div>
       <div class="rs-field-row">
-        <div class="rs-field"><label>Data de início</label><input type="date" class="rs-input" id="f-inicio" value="${c.dataInicio || util.toLocalDateStr()}"></div>
-        <div class="rs-field"><label>Status</label>
+        <div class="rs-field"><label>${t("clientes.dataInicio")}</label><input type="date" class="rs-input" id="f-inicio" value="${c.dataInicio || util.toLocalDateStr()}"></div>
+        <div class="rs-field"><label>${t("comum.status")}</label>
           <select class="rs-select" id="f-status">
-            <option value="ativo" ${(c.status || "ativo") === "ativo" ? "selected" : ""}>Ativo</option>
-            <option value="inativo" ${c.status === "inativo" ? "selected" : ""}>Inativo</option>
+            <option value="ativo" ${(c.status || "ativo") === "ativo" ? "selected" : ""}>${t("comum.ativo")}</option>
+            <option value="inativo" ${c.status === "inativo" ? "selected" : ""}>${t("comum.inativo")}</option>
           </select>
         </div>
       </div>
     `;
     const footHtml = `
-      <button class="rs-btn rs-btn-ghost" data-close>Cancelar</button>
-      <button class="rs-btn rs-btn-primary" id="f-save">${RS.icon("check", 14)} Salvar</button>
+      <button class="rs-btn rs-btn-ghost" data-close>${t("comum.cancelar")}</button>
+      <button class="rs-btn rs-btn-primary" id="f-save">${RS.icon("check", 14)} ${t("comum.salvar")}</button>
     `;
-    const modal = RS.openModal({ title: existing ? "Editar " + cfg.labels.cliente_singular.toLowerCase() : "Novo " + cfg.labels.cliente_singular.toLowerCase(), bodyHtml, footHtml, wide: true });
+    const modal = RS.openModal({ title: existing ? t("clientes.editarTitulo", { singular: cfg.labels.cliente_singular.toLowerCase() }) : t("clientes.novoTitulo", { singular: cfg.labels.cliente_singular.toLowerCase() }), bodyHtml, footHtml, wide: true });
 
     modal.querySelector("#f-save").addEventListener("click", () => {
       const nome = modal.querySelector("#f-nome").value.trim();
       if (!nome) {
-        RS.toast("Informe o nome.");
+        RS.toast(t("clientes.informeNome"));
         return;
       }
       const data = {
@@ -2097,11 +2746,11 @@ a { color: inherit; text-decoration: none; }
       if (existing) {
         const updated = storage.update(ENTITY, existing.id, data);
         if (!updated) return;
-        RS.toast("Cadastro atualizado.");
+        RS.toast(t("clientes.cadastroAtualizado"));
       } else {
         const created = storage.create(ENTITY, data);
         if (!created) return;
-        RS.toast("Cliente cadastrado.");
+        RS.toast(t("clientes.clienteCadastrado"));
         RS.closeModal();
         RS.router.navigate("clientes", created.id);
         return;
@@ -2115,10 +2764,11 @@ a { color: inherit; text-decoration: none; }
   let activeTab = "perfil";
 
   function renderDetail(container, id) {
+    const t = RS.I18n.t;
     const c = storage.getById(ENTITY, id);
     if (!c) {
-      container.innerHTML = `<div class="rs-empty">${RS.icon("users", 34)}<p>Registro não encontrado.</p>
-        <button class="rs-btn rs-btn-ghost" id="rs-back">Voltar</button></div>`;
+      container.innerHTML = `<div class="rs-empty">${RS.icon("users", 34)}<p>${t("clientes.registroNaoEncontrado")}</p>
+        <button class="rs-btn rs-btn-ghost" id="rs-back">${t("comum.voltar")}</button></div>`;
       container.querySelector("#rs-back").addEventListener("click", () => RS.router.navigate("clientes"));
       return;
     }
@@ -2126,22 +2776,22 @@ a { color: inherit; text-decoration: none; }
     const a = age(c.dataNascimento);
 
     container.innerHTML = `
-      <button class="rs-btn rs-btn-subtle" id="rs-back" style="margin-bottom:14px;">${RS.icon("chevronLeft", 14)} Voltar</button>
+      <button class="rs-btn rs-btn-subtle" id="rs-back" style="margin-bottom:14px;">${RS.icon("chevronLeft", 14)} ${t("comum.voltar")}</button>
       <div class="rs-card" style="margin-bottom:16px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
         <div class="rs-avatar" style="width:56px; height:56px; font-size:18px;">${util.initials(c.nome)}</div>
         <div style="flex:1; min-width:180px;">
           <h2 style="font-size:19px;">${util.escapeHtml(c.nome)}</h2>
           <div style="font-size:12.5px; color:var(--rs-ink-faint); margin-top:3px;">
-            ${a != null ? a + " anos · " : ""}${util.escapeHtml(c.profissao || c.escola || "—")} · desde ${util.formatDate(c.dataInicio)}
+            ${a != null ? a + " " + t("comum.anos") + " · " : ""}${util.escapeHtml(c.profissao || c.escola || "—")} · ${t("clientes.desde")} ${util.formatDate(c.dataInicio)}
           </div>
         </div>
-        <span class="rs-badge ${c.status === "inativo" ? "rs-badge-gray" : "rs-badge-blue"}">${c.status === "inativo" ? "Inativo" : "Ativo"}</span>
-        <button class="rs-btn rs-btn-ghost" id="rs-edit">${RS.icon("edit", 14)} Editar</button>
+        <span class="rs-badge ${c.status === "inativo" ? "rs-badge-gray" : "rs-badge-blue"}">${c.status === "inativo" ? t("comum.inativo") : t("comum.ativo")}</span>
+        <button class="rs-btn rs-btn-ghost" id="rs-edit">${RS.icon("edit", 14)} ${t("comum.editar")}</button>
         <button class="rs-btn rs-btn-danger" id="rs-del">${RS.icon("trash", 14)}</button>
       </div>
 
       <div class="rs-tabs" id="rs-tabs">
-        ${tab("perfil", "Perfil")}${tab("timeline", cfg.labels.atendimento_plural)}${tab("documentos", "Documentos")}${tab("financeiro", "Financeiro")}
+        ${tab("perfil", t("clientes.tabPerfil"))}${tab("timeline", cfg.labels.atendimento_plural)}${tab("financeiro", t("clientes.tabFinanceiro"))}
       </div>
       <div id="rs-tab-content"></div>
     `;
@@ -2149,16 +2799,16 @@ a { color: inherit; text-decoration: none; }
     container.querySelector("#rs-back").addEventListener("click", () => RS.router.navigate("clientes"));
     container.querySelector("#rs-edit").addEventListener("click", () => openForm(c));
     container.querySelector("#rs-del").addEventListener("click", () => {
-      if (confirm("Excluir " + c.nome + "? Esta ação não pode ser desfeita.")) {
+      if (confirm(t("clientes.confirmarExclusao", { nome: c.nome }))) {
         storage.remove(ENTITY, c.id);
-        RS.toast("Registro excluído.");
+        RS.toast(t("clientes.registroExcluido"));
         RS.router.navigate("clientes");
       }
     });
 
-    container.querySelectorAll("[data-tab]").forEach((t) =>
-      t.addEventListener("click", () => {
-        activeTab = t.dataset.tab;
+    container.querySelectorAll("[data-tab]").forEach((tEl) =>
+      tEl.addEventListener("click", () => {
+        activeTab = tEl.dataset.tab;
         renderDetail(container, id);
       })
     );
@@ -2179,19 +2829,20 @@ a { color: inherit; text-decoration: none; }
 
   function renderPerfil(el, c) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     const rows = [
-      ["Responsável", c.responsavel],
-      ["Telefone", c.telefone],
+      [t("clientes.responsavelLabel"), c.responsavel],
+      [t("comum.telefone"), c.telefone],
       ["WhatsApp", c.whatsapp],
-      ["E-mail", c.email],
-      ["Endereço", c.endereco],
-      ["Escola / Instituição", c.escola],
-      ["Profissão", c.profissao],
+      [t("comum.email"), c.email],
+      [t("comum.endereco"), c.endereco],
+      [t("clientes.escolaInstituicao"), c.escola],
+      [t("clientes.profissao"), c.profissao],
     ];
     el.innerHTML = `
       <div class="rs-grid rs-grid-2">
         <div class="rs-card">
-          <div class="rs-section-title">Dados de contato</div>
+          <div class="rs-section-title">${t("clientes.dadosContato")}</div>
           ${rows.map(([l, v]) => fieldRow(l, v)).join("")}
         </div>
         <div class="rs-card">
@@ -2199,7 +2850,7 @@ a { color: inherit; text-decoration: none; }
           <p style="font-size:13.5px; line-height:1.6; color:var(--rs-ink-soft);">${util.escapeHtml(c.objetivos) || "—"}</p>
           <div class="rs-section-title" style="margin-top:18px;">${util.escapeHtml(cfg.labels.diagnostico)}</div>
           <p style="font-size:13.5px; line-height:1.6; color:var(--rs-ink-soft);">${util.escapeHtml(c.diagnostico) || "—"}</p>
-          <div class="rs-section-title" style="margin-top:18px;">Observações</div>
+          <div class="rs-section-title" style="margin-top:18px;">${t("comum.observacoes")}</div>
           <p style="font-size:13.5px; line-height:1.6; color:var(--rs-ink-soft);">${util.escapeHtml(c.observacoes) || "—"}</p>
         </div>
       </div>
@@ -2213,9 +2864,8 @@ a { color: inherit; text-decoration: none; }
   }
 
   RS.modules = RS.modules || {};
-  RS.modules.clientes = { id: "clientes", get label() { return RS.config.labels.cliente_plural; }, subtitle: "Prontuário digital", render };
+  RS.modules.clientes = { id: "clientes", i18nSubtitleKey: "shell.clientes.subtitulo", get label() { return RS.config.labels.cliente_plural; }, get subtitle() { return RS.I18n.t("shell.clientes.subtitulo"); }, render };
 })(window);
-
 
 /* ---- js/modules/timeline.js ---- */
 (function (global) {
@@ -2226,9 +2876,10 @@ a { color: inherit; text-decoration: none; }
 
   function renderForClient(el, cliente) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     el.innerHTML = `
       <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
-        <button class="rs-btn rs-btn-primary" id="rs-tl-new">${RS.icon("plus", 15)} Registrar ${cfg.labels.atendimento_singular.toLowerCase()}</button>
+        <button class="rs-btn rs-btn-primary" id="rs-tl-new">${RS.icon("plus", 15)} ${t("timeline.registrar")} ${cfg.labels.atendimento_singular.toLowerCase()}</button>
       </div>
       <div id="rs-tl-list"></div>
     `;
@@ -2237,6 +2888,7 @@ a { color: inherit; text-decoration: none; }
   }
 
   function renderList(el, cliente) {
+    const t = RS.I18n.t;
     const listEl = el.querySelector("#rs-tl-list");
     const items = storage
       .list(ENTITY)
@@ -2244,7 +2896,7 @@ a { color: inherit; text-decoration: none; }
       .sort((a, b) => new Date(b.data + "T" + (b.hora || "00:00")) - new Date(a.data + "T" + (a.hora || "00:00")));
 
     if (!items.length) {
-      listEl.innerHTML = `<div class="rs-card"><div class="rs-empty">${RS.icon("clock", 34)}<p>Nenhum registro ainda. A evolução completa aparece aqui conforme os atendimentos forem lançados.</p></div></div>`;
+      listEl.innerHTML = `<div class="rs-card"><div class="rs-empty">${RS.icon("clock", 34)}<p>${t("timeline.nenhumRegistro")}</p></div></div>`;
       return;
     }
 
@@ -2255,9 +2907,9 @@ a { color: inherit; text-decoration: none; }
     );
     listEl.querySelectorAll("[data-del]").forEach((b) =>
       b.addEventListener("click", () => {
-        if (confirm("Excluir este registro da linha do tempo?")) {
+        if (confirm(t("timeline.confirmarExclusao"))) {
           storage.remove(ENTITY, b.dataset.del);
-          RS.toast("Registro removido.");
+          RS.toast(t("timeline.registroRemovido"));
           renderList(el, cliente);
         }
       })
@@ -2265,11 +2917,12 @@ a { color: inherit; text-decoration: none; }
   }
 
   function itemHtml(a) {
+    const t = RS.I18n.t;
     return `
       <div class="rs-card-flat" style="margin-bottom:10px; position:relative;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
           <div>
-            <span class="rs-badge rs-badge-lilac">${util.escapeHtml(a.tipo || "Sessão")}</span>
+            <span class="rs-badge rs-badge-lilac">${util.escapeHtml(a.tipo || t("timeline.sessao"))}</span>
             <span style="font-size:12px; color:var(--rs-ink-faint); margin-left:8px;">${util.formatDate(a.data)} ${a.hora ? "· " + a.hora : ""} ${a.duracaoMin ? "· " + a.duracaoMin + "min" : ""}</span>
           </div>
           <div style="display:flex; gap:6px;">
@@ -2277,13 +2930,13 @@ a { color: inherit; text-decoration: none; }
             <button class="rs-btn rs-btn-danger rs-btn-icon" data-del="${a.id}">${RS.icon("trash", 14)}</button>
           </div>
         </div>
-        ${a.objetivos ? field("Objetivos da sessão", a.objetivos) : ""}
-        ${a.descricao ? field("Descrição", a.descricao) : ""}
-        ${a.atividades ? field("Atividades", a.atividades) : ""}
-        ${a.materiais ? field("Materiais utilizados", a.materiais) : ""}
-        ${a.respostaCliente ? field("Resposta observada", a.respostaCliente) : ""}
-        ${a.proximosPassos ? field("Próximos passos", a.proximosPassos) : ""}
-        ${a.observacoes ? field("Observações", a.observacoes) : ""}
+        ${a.objetivos ? field(t("timeline.objetivosSessao"), a.objetivos) : ""}
+        ${a.descricao ? field(t("timeline.descricao"), a.descricao) : ""}
+        ${a.atividades ? field(t("timeline.atividades"), a.atividades) : ""}
+        ${a.materiais ? field(t("timeline.materiaisUtilizados"), a.materiais) : ""}
+        ${a.respostaCliente ? field(t("timeline.respostaObservada"), a.respostaCliente) : ""}
+        ${a.proximosPassos ? field(t("timeline.proximosPassos"), a.proximosPassos) : ""}
+        ${a.observacoes ? field(t("comum.observacoes"), a.observacoes) : ""}
       </div>`;
   }
 
@@ -2293,32 +2946,33 @@ a { color: inherit; text-decoration: none; }
 
   function openForm(cliente, el, existing) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     const a = existing || {};
     const tipos = cfg.tiposAtendimento || [];
     const bodyHtml = `
       <div class="rs-field-row">
-        <div class="rs-field"><label>Data *</label><input type="date" class="rs-input" id="t-data" value="${a.data || util.toLocalDateStr()}"></div>
-        <div class="rs-field"><label>Hora</label><input type="time" class="rs-input" id="t-hora" value="${a.hora || ""}"></div>
+        <div class="rs-field"><label>${t("timeline.data")}</label><input type="date" class="rs-input" id="t-data" value="${a.data || util.toLocalDateStr()}"></div>
+        <div class="rs-field"><label>${t("timeline.hora")}</label><input type="time" class="rs-input" id="t-hora" value="${a.hora || ""}"></div>
       </div>
       <div class="rs-field-row">
-        <div class="rs-field"><label>Duração (min)</label><input type="number" min="0" class="rs-input" id="t-dur" value="${a.duracaoMin || 50}"></div>
-        <div class="rs-field"><label>Tipo</label>
-          <select class="rs-select" id="t-tipo">${tipos.map((t) => `<option ${a.tipo === t ? "selected" : ""}>${t}</option>`).join("")}</select>
+        <div class="rs-field"><label>${t("timeline.duracaoMin")}</label><input type="number" min="0" class="rs-input" id="t-dur" value="${a.duracaoMin || 50}"></div>
+        <div class="rs-field"><label>${t("timeline.tipo")}</label>
+          <select class="rs-select" id="t-tipo">${tipos.map((tp) => `<option ${a.tipo === tp ? "selected" : ""}>${tp}</option>`).join("")}</select>
         </div>
       </div>
-      <div class="rs-field"><label>Objetivos da sessão</label><textarea class="rs-textarea" id="t-obj">${util.escapeHtml(a.objetivos || "")}</textarea></div>
-      <div class="rs-field"><label>Descrição do atendimento</label><textarea class="rs-textarea" id="t-desc">${util.escapeHtml(a.descricao || "")}</textarea></div>
+      <div class="rs-field"><label>${t("timeline.objetivosSessao")}</label><textarea class="rs-textarea" id="t-obj">${util.escapeHtml(a.objetivos || "")}</textarea></div>
+      <div class="rs-field"><label>${t("timeline.descricaoAtendimento")}</label><textarea class="rs-textarea" id="t-desc">${util.escapeHtml(a.descricao || "")}</textarea></div>
       <div class="rs-field-row">
-        <div class="rs-field"><label>Atividades</label><textarea class="rs-textarea" id="t-ativ">${util.escapeHtml(a.atividades || "")}</textarea></div>
-        <div class="rs-field"><label>Materiais utilizados</label><textarea class="rs-textarea" id="t-mat">${util.escapeHtml(a.materiais || "")}</textarea></div>
+        <div class="rs-field"><label>${t("timeline.atividades")}</label><textarea class="rs-textarea" id="t-ativ">${util.escapeHtml(a.atividades || "")}</textarea></div>
+        <div class="rs-field"><label>${t("timeline.materiaisUtilizados")}</label><textarea class="rs-textarea" id="t-mat">${util.escapeHtml(a.materiais || "")}</textarea></div>
       </div>
-      <div class="rs-field"><label>Resposta observada</label><textarea class="rs-textarea" id="t-resp">${util.escapeHtml(a.respostaCliente || "")}</textarea></div>
-      <div class="rs-field"><label>Próximos passos</label><textarea class="rs-textarea" id="t-prox">${util.escapeHtml(a.proximosPassos || "")}</textarea></div>
-      <div class="rs-field"><label>Observações</label><textarea class="rs-textarea" id="t-obs">${util.escapeHtml(a.observacoes || "")}</textarea></div>
+      <div class="rs-field"><label>${t("timeline.respostaObservada")}</label><textarea class="rs-textarea" id="t-resp">${util.escapeHtml(a.respostaCliente || "")}</textarea></div>
+      <div class="rs-field"><label>${t("timeline.proximosPassos")}</label><textarea class="rs-textarea" id="t-prox">${util.escapeHtml(a.proximosPassos || "")}</textarea></div>
+      <div class="rs-field"><label>${t("comum.observacoes")}</label><textarea class="rs-textarea" id="t-obs">${util.escapeHtml(a.observacoes || "")}</textarea></div>
     `;
-    const footHtml = `<button class="rs-btn rs-btn-ghost" data-close>Cancelar</button>
-      <button class="rs-btn rs-btn-primary" id="t-save">${RS.icon("check", 14)} Salvar</button>`;
-    const modal = RS.openModal({ title: existing ? "Editar registro" : "Registrar " + cfg.labels.atendimento_singular.toLowerCase(), bodyHtml, footHtml, wide: true });
+    const footHtml = `<button class="rs-btn rs-btn-ghost" data-close>${t("comum.cancelar")}</button>
+      <button class="rs-btn rs-btn-primary" id="t-save">${RS.icon("check", 14)} ${t("comum.salvar")}</button>`;
+    const modal = RS.openModal({ title: existing ? t("timeline.editarRegistro") : t("timeline.registrar") + " " + cfg.labels.atendimento_singular.toLowerCase(), bodyHtml, footHtml, wide: true });
 
     modal.querySelector("#t-save").addEventListener("click", () => {
       const data = {
@@ -2336,12 +2990,12 @@ a { color: inherit; text-decoration: none; }
         observacoes: modal.querySelector("#t-obs").value.trim(),
       };
       if (!data.data) {
-        RS.toast("Informe a data.");
+        RS.toast(t("timeline.informeData"));
         return;
       }
       const ok = existing ? storage.update(ENTITY, existing.id, data) : storage.create(ENTITY, data);
       if (!ok) return;
-      RS.toast("Registro salvo na linha do tempo.");
+      RS.toast(t("timeline.registroSalvo"));
       RS.closeModal();
       renderList(el, cliente);
     });
@@ -2351,7 +3005,6 @@ a { color: inherit; text-decoration: none; }
   RS.modules.timeline = { id: "timeline", label: "Timeline", renderForClient };
 })(window);
 
-
 /* ---- js/modules/agenda.js ---- */
 (function (global) {
   "use strict";
@@ -2360,11 +3013,13 @@ a { color: inherit; text-decoration: none; }
   const ENTITY = "agenda";
   const STATUSES = ["confirmado", "realizado", "falta", "cancelado", "remarcado"];
   const STATUS_BADGE = { confirmado: "rs-badge-blue", realizado: "rs-badge-lilac", falta: "rs-badge-yellow", cancelado: "rs-badge-gray", remarcado: "rs-badge-pink" };
+  function statusLabel(s) { return RS.I18n.t("agenda.status." + s) || s; }
 
   let cursor = new Date();
   cursor.setDate(1);
 
   function render(container) {
+    const t = RS.I18n.t;
     container.innerHTML = `
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
         <div style="display:flex; align-items:center; gap:8px;">
@@ -2372,7 +3027,7 @@ a { color: inherit; text-decoration: none; }
           <div style="font-family:var(--font-display); font-weight:650; font-size:16px; min-width:170px; text-align:center; text-transform:capitalize;" id="rs-ag-label"></div>
           <button class="rs-btn rs-btn-ghost rs-btn-icon" id="rs-ag-next">${RS.icon("chevronRight", 15)}</button>
         </div>
-        <button class="rs-btn rs-btn-primary" id="rs-ag-new">${RS.icon("plus", 15)} Novo agendamento</button>
+        <button class="rs-btn rs-btn-primary" id="rs-ag-new">${RS.icon("plus", 15)} ${t("agenda.novoAgendamento")}</button>
       </div>
       <div class="rs-card">
         <div class="rs-cal-grid" id="rs-ag-grid"></div>
@@ -2432,6 +3087,7 @@ a { color: inherit; text-decoration: none; }
 
   // ---------------------------------------------------------------- DIA
   function openDayView(dateStr, container) {
+    const t = RS.I18n.t;
     const clientesMap = {};
     storage.list("clientes").forEach((c) => (clientesMap[c.id] = c.nome));
     const events = storage
@@ -2446,20 +3102,20 @@ a { color: inherit; text-decoration: none; }
 
     const bodyHtml =
       (events.length
-        ? `<div style="font-size:12px; color:var(--rs-ink-faint); margin-bottom:10px;">${events.length} ${events.length === 1 ? "agendamento" : "agendamentos"}</div><div class="rs-day-agenda">` +
+        ? `<div style="font-size:12px; color:var(--rs-ink-faint); margin-bottom:10px;">${events.length} ${events.length === 1 ? t("agenda.agendamento") : t("agenda.agendamentos")}</div><div class="rs-day-agenda">` +
           events.map((e) => dayRowHtml(e, clientesMap)).join("") +
           `</div>`
-        : `<div class="rs-empty">${RS.icon("calendar", 34)}<p>Nenhum agendamento neste dia.</p></div>`);
+        : `<div class="rs-empty">${RS.icon("calendar", 34)}<p>${t("agenda.nenhumNesteDia")}</p></div>`);
 
     const footHtml = `
-      <button class="rs-btn rs-btn-ghost" data-close>Fechar</button>
-      <button class="rs-btn rs-btn-primary" id="day-add">${RS.icon("plus", 14)} Novo agendamento</button>
+      <button class="rs-btn rs-btn-ghost" data-close>${t("agenda.fechar")}</button>
+      <button class="rs-btn rs-btn-primary" id="day-add">${RS.icon("plus", 14)} ${t("agenda.novoAgendamento")}</button>
     `;
 
     const modal = RS.openModal({ title: labelCap, bodyHtml, footHtml });
     if (isToday) {
       const h3 = modal.querySelector(".rs-modal-head h3");
-      if (h3) h3.insertAdjacentHTML("beforeend", ' <span class="rs-badge rs-badge-blue" style="vertical-align:middle; margin-left:6px;">Hoje</span>');
+      if (h3) h3.insertAdjacentHTML("beforeend", ` <span class="rs-badge rs-badge-blue" style="vertical-align:middle; margin-left:6px;">${t("agenda.hoje")}</span>`);
     }
 
     modal.querySelectorAll("[data-evt-row]").forEach((row) => {
@@ -2486,12 +3142,13 @@ a { color: inherit; text-decoration: none; }
           <div style="font-weight:600; font-size:13.5px;">${util.escapeHtml(e.titulo)}</div>
           <div style="font-size:12px; color:var(--rs-ink-faint);">${cliente ? util.escapeHtml(cliente) + " · " : ""}${e.duracaoMin ? e.duracaoMin + " min" : ""}</div>
         </div>
-        <span class="rs-badge ${STATUS_BADGE[e.status] || "rs-badge-blue"}">${e.status || "confirmado"}</span>
+        <span class="rs-badge ${STATUS_BADGE[e.status] || "rs-badge-blue"}">${statusLabel(e.status || "confirmado")}</span>
       </div>`;
   }
 
   function openForm(existing, onSaved, isNewFromDay) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     const e = (isNewFromDay ? existing : existing) || {};
     const clientes = storage.list("clientes").sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
     const dt = e.data ? new Date(e.data) : new Date();
@@ -2499,37 +3156,37 @@ a { color: inherit; text-decoration: none; }
     const timeVal = e.data && e.data.includes("T") ? e.data.slice(11, 16) : "09:00";
 
     const bodyHtml = `
-      <div class="rs-field"><label>Título *</label><input class="rs-input" id="a-titulo" value="${util.escapeHtml(e.titulo || "")}" placeholder="Ex.: Sessão com ${clientes[0] ? util.escapeHtml(clientes[0].nome) : "cliente"}"></div>
-      <div class="rs-field"><label>${cfg.labels.cliente_singular} (opcional)</label>
+      <div class="rs-field"><label>${t("agenda.titulo")}</label><input class="rs-input" id="a-titulo" value="${util.escapeHtml(e.titulo || "")}" placeholder="${t("agenda.tituloPlaceholder", { nome: clientes[0] ? util.escapeHtml(clientes[0].nome) : t("agenda.clienteGenerico") })}"></div>
+      <div class="rs-field"><label>${cfg.labels.cliente_singular} ${t("agenda.opcional")}</label>
         <select class="rs-select" id="a-cliente">
-          <option value="">— nenhum —</option>
+          <option value="">${t("agenda.nenhum")}</option>
           ${clientes.map((c) => `<option value="${c.id}" ${e.clienteId === c.id ? "selected" : ""}>${util.escapeHtml(c.nome)}</option>`).join("")}
         </select>
       </div>
       <div class="rs-field-row">
-        <div class="rs-field"><label>Data *</label><input type="date" class="rs-input" id="a-data" value="${dateVal}"></div>
-        <div class="rs-field"><label>Hora</label><input type="time" class="rs-input" id="a-hora" value="${timeVal}"></div>
+        <div class="rs-field"><label>${t("agenda.data")}</label><input type="date" class="rs-input" id="a-data" value="${dateVal}"></div>
+        <div class="rs-field"><label>${t("agenda.hora")}</label><input type="time" class="rs-input" id="a-hora" value="${timeVal}"></div>
       </div>
       <div class="rs-field-row">
-        <div class="rs-field"><label>Duração (min)</label><input type="number" class="rs-input" id="a-dur" value="${e.duracaoMin || 50}"></div>
-        <div class="rs-field"><label>Status</label>
-          <select class="rs-select" id="a-status">${STATUSES.map((s) => `<option ${e.status === s ? "selected" : ""}>${s}</option>`).join("")}</select>
+        <div class="rs-field"><label>${t("timeline.duracaoMin")}</label><input type="number" class="rs-input" id="a-dur" value="${e.duracaoMin || 50}"></div>
+        <div class="rs-field"><label>${t("comum.status")}</label>
+          <select class="rs-select" id="a-status">${STATUSES.map((s) => `<option value="${s}" ${e.status === s ? "selected" : ""}>${statusLabel(s)}</option>`).join("")}</select>
         </div>
       </div>
-      <div class="rs-field"><label>Notas</label><textarea class="rs-textarea" id="a-notas">${util.escapeHtml(e.notas || "")}</textarea></div>
+      <div class="rs-field"><label>${t("agenda.notas")}</label><textarea class="rs-textarea" id="a-notas">${util.escapeHtml(e.notas || "")}</textarea></div>
     `;
     const footHtml = `
-      ${e.id ? `<button class="rs-btn rs-btn-danger" id="a-del" style="margin-right:auto;">${RS.icon("trash", 14)} Excluir</button>` : ""}
-      <button class="rs-btn rs-btn-ghost" data-close>Cancelar</button>
-      <button class="rs-btn rs-btn-primary" id="a-save">${RS.icon("check", 14)} Salvar</button>
+      ${e.id ? `<button class="rs-btn rs-btn-danger" id="a-del" style="margin-right:auto;">${RS.icon("trash", 14)} ${t("agenda.excluir")}</button>` : ""}
+      <button class="rs-btn rs-btn-ghost" data-close>${t("comum.cancelar")}</button>
+      <button class="rs-btn rs-btn-primary" id="a-save">${RS.icon("check", 14)} ${t("comum.salvar")}</button>
     `;
-    const modal = RS.openModal({ title: e.id ? "Editar agendamento" : "Novo agendamento", bodyHtml, footHtml });
+    const modal = RS.openModal({ title: e.id ? t("agenda.editarAgendamento") : t("agenda.novoAgendamento"), bodyHtml, footHtml });
 
     if (e.id) {
       modal.querySelector("#a-del").addEventListener("click", () => {
-        if (confirm("Excluir este agendamento?")) {
+        if (confirm(t("agenda.confirmarExclusao"))) {
           storage.remove(ENTITY, e.id);
-          RS.toast("Agendamento excluído.");
+          RS.toast(t("agenda.agendamentoExcluido"));
           RS.closeModal();
           onSaved();
         }
@@ -2540,7 +3197,7 @@ a { color: inherit; text-decoration: none; }
       const titulo = modal.querySelector("#a-titulo").value.trim();
       const data = modal.querySelector("#a-data").value;
       if (!titulo || !data) {
-        RS.toast("Informe título e data.");
+        RS.toast(t("agenda.informeTituloData"));
         return;
       }
       const payload = {
@@ -2553,16 +3210,15 @@ a { color: inherit; text-decoration: none; }
       };
       const ok = e.id ? storage.update(ENTITY, e.id, payload) : storage.create(ENTITY, payload);
       if (!ok) return;
-      RS.toast("Agendamento salvo.");
+      RS.toast(t("agenda.agendamentoSalvo"));
       RS.closeModal();
       onSaved();
     });
   }
 
   RS.modules = RS.modules || {};
-  RS.modules.agenda = { id: "agenda", label: "Agenda", subtitle: "Calendário de atendimentos", render };
+  RS.modules.agenda = { id: "agenda", i18nKey: "nav.agenda", i18nSubtitleKey: "shell.agenda.subtitulo", get label() { return RS.I18n.t("nav.agenda"); }, get subtitle() { return RS.I18n.t("shell.agenda.subtitulo"); }, render };
 })(window);
-
 
 /* ---- js/modules/financeiro.js ---- */
 (function (global) {
@@ -2570,6 +3226,7 @@ a { color: inherit; text-decoration: none; }
   const RS = global.RS;
   const { storage, util } = RS;
   const ENTITY = "financeiro";
+  function statusLabel(s) { return RS.I18n.t("financeiro.status." + s) || s; }
 
   function render(container) {
     renderInner(container, null);
@@ -2581,6 +3238,7 @@ a { color: inherit; text-decoration: none; }
 
   function renderInner(container, cliente) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     const all = storage.list(ENTITY).filter((f) => !cliente || f.clienteId === cliente.id);
     const now = new Date();
     const recebidoMes = all
@@ -2593,13 +3251,13 @@ a { color: inherit; text-decoration: none; }
 
     container.innerHTML = `
       <div class="rs-grid rs-grid-3" style="margin-bottom:16px;">
-        ${miniStat("blue", "Recebido no mês", util.formatCurrency(recebidoMes))}
-        ${miniStat("yellow", "A receber", util.formatCurrency(aReceber))}
-        ${miniStat("pink", "Despesas no mês", util.formatCurrency(despesasMes))}
+        ${miniStat("blue", t("financeiro.recebidoMes"), util.formatCurrency(recebidoMes))}
+        ${miniStat("yellow", t("dashboard.aReceber"), util.formatCurrency(aReceber))}
+        ${miniStat("pink", t("financeiro.despesasMes"), util.formatCurrency(despesasMes))}
       </div>
       <div class="rs-card">
-        <div class="rs-section-title">Lançamentos
-          <button class="rs-btn rs-btn-primary" id="rs-fin-new">${RS.icon("plus", 14)} Novo lançamento</button>
+        <div class="rs-section-title">${t("financeiro.lancamentos")}
+          <button class="rs-btn rs-btn-primary" id="rs-fin-new">${RS.icon("plus", 14)} ${t("financeiro.novoLancamento")}</button>
         </div>
         <div id="rs-fin-list"></div>
       </div>
@@ -2622,6 +3280,7 @@ a { color: inherit; text-decoration: none; }
   }
 
   function renderList(container, cliente) {
+    const t = RS.I18n.t;
     const listEl = container.querySelector("#rs-fin-list");
     const clientesMap = {};
     storage.list("clientes").forEach((c) => (clientesMap[c.id] = c.nome));
@@ -2631,7 +3290,7 @@ a { color: inherit; text-decoration: none; }
       .sort((a, b) => new Date(b.data) - new Date(a.data));
 
     if (!items.length) {
-      listEl.innerHTML = `<div class="rs-empty">${RS.icon("wallet", 34)}<p>Nenhum lançamento registrado ainda.</p></div>`;
+      listEl.innerHTML = `<div class="rs-empty">${RS.icon("wallet", 34)}<p>${t("financeiro.nenhumLancamento")}</p></div>`;
       return;
     }
 
@@ -2644,7 +3303,7 @@ a { color: inherit; text-decoration: none; }
           <div style="font-weight:600; font-size:13.5px;">${util.escapeHtml(f.descricao || f.categoria)}</div>
           <div style="font-size:12px; color:var(--rs-ink-faint);">${util.formatDate(f.data)} ${f.clienteId && clientesMap[f.clienteId] ? "· " + util.escapeHtml(clientesMap[f.clienteId]) : ""}</div>
         </div>
-        <span class="rs-badge ${f.status === "pago" ? "rs-badge-blue" : "rs-badge-yellow"}">${f.status}</span>
+        <span class="rs-badge ${f.status === "pago" ? "rs-badge-blue" : "rs-badge-yellow"}">${statusLabel(f.status)}</span>
         <span class="rs-mono" style="font-weight:650; font-size:13.5px; min-width:90px; text-align:right; color:${f.tipo === "despesa" ? "#C23E70" : "var(--rs-ink)"}">
           ${f.tipo === "despesa" ? "− " : ""}${util.formatCurrency(f.valor)}
         </span>
@@ -2659,50 +3318,51 @@ a { color: inherit; text-decoration: none; }
 
   function openForm(cliente, onSaved, existing) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     const f = existing || {};
     const clientes = storage.list("clientes").sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
     const cats = cfg.categoriasFinanceiras || [];
 
     const bodyHtml = `
       <div class="rs-field-row">
-        <div class="rs-field"><label>Tipo</label>
+        <div class="rs-field"><label>${t("financeiro.tipo")}</label>
           <select class="rs-select" id="fn-tipo">
-            <option value="receita" ${(f.tipo || "receita") === "receita" ? "selected" : ""}>Receita</option>
-            <option value="despesa" ${f.tipo === "despesa" ? "selected" : ""}>Despesa</option>
+            <option value="receita" ${(f.tipo || "receita") === "receita" ? "selected" : ""}>${t("financeiro.receita")}</option>
+            <option value="despesa" ${f.tipo === "despesa" ? "selected" : ""}>${t("financeiro.despesa")}</option>
           </select>
         </div>
-        <div class="rs-field"><label>Categoria</label>
+        <div class="rs-field"><label>${t("financeiro.categoria")}</label>
           <select class="rs-select" id="fn-cat">${cats.map((c) => `<option ${f.categoria === c ? "selected" : ""}>${c}</option>`).join("")}</select>
         </div>
       </div>
-      ${!cliente ? `<div class="rs-field"><label>${cfg.labels.cliente_singular} (opcional)</label>
-        <select class="rs-select" id="fn-cliente"><option value="">— nenhum —</option>
+      ${!cliente ? `<div class="rs-field"><label>${cfg.labels.cliente_singular} ${t("agenda.opcional")}</label>
+        <select class="rs-select" id="fn-cliente"><option value="">${t("agenda.nenhum")}</option>
           ${clientes.map((c) => `<option value="${c.id}" ${f.clienteId === c.id ? "selected" : ""}>${util.escapeHtml(c.nome)}</option>`).join("")}
         </select></div>` : ""}
       <div class="rs-field-row">
-        <div class="rs-field"><label>Valor (R$) *</label><input type="number" step="0.01" min="0" class="rs-input" id="fn-valor" value="${f.valor || ""}"></div>
-        <div class="rs-field"><label>Data *</label><input type="date" class="rs-input" id="fn-data" value="${f.data || util.toLocalDateStr()}"></div>
+        <div class="rs-field"><label>${t("financeiro.valor")}</label><input type="number" step="0.01" min="0" class="rs-input" id="fn-valor" value="${f.valor || ""}"></div>
+        <div class="rs-field"><label>${t("agenda.data")}</label><input type="date" class="rs-input" id="fn-data" value="${f.data || util.toLocalDateStr()}"></div>
       </div>
-      <div class="rs-field"><label>Status</label>
+      <div class="rs-field"><label>${t("comum.status")}</label>
         <select class="rs-select" id="fn-status">
-          <option value="pendente" ${(f.status || "pendente") === "pendente" ? "selected" : ""}>Pendente</option>
-          <option value="pago" ${f.status === "pago" ? "selected" : ""}>Pago</option>
+          <option value="pendente" ${(f.status || "pendente") === "pendente" ? "selected" : ""}>${t("financeiro.pendente")}</option>
+          <option value="pago" ${f.status === "pago" ? "selected" : ""}>${t("financeiro.pago")}</option>
         </select>
       </div>
-      <div class="rs-field"><label>Descrição</label><input class="rs-input" id="fn-desc" value="${util.escapeHtml(f.descricao || "")}"></div>
+      <div class="rs-field"><label>${t("financeiro.descricao")}</label><input class="rs-input" id="fn-desc" value="${util.escapeHtml(f.descricao || "")}"></div>
     `;
     const footHtml = `
-      ${f.id ? `<button class="rs-btn rs-btn-danger" id="fn-del" style="margin-right:auto;">${RS.icon("trash", 14)} Excluir</button>` : ""}
-      <button class="rs-btn rs-btn-ghost" data-close>Cancelar</button>
-      <button class="rs-btn rs-btn-primary" id="fn-save">${RS.icon("check", 14)} Salvar</button>
+      ${f.id ? `<button class="rs-btn rs-btn-danger" id="fn-del" style="margin-right:auto;">${RS.icon("trash", 14)} ${t("financeiro.excluir")}</button>` : ""}
+      <button class="rs-btn rs-btn-ghost" data-close>${t("comum.cancelar")}</button>
+      <button class="rs-btn rs-btn-primary" id="fn-save">${RS.icon("check", 14)} ${t("comum.salvar")}</button>
     `;
-    const modal = RS.openModal({ title: f.id ? "Editar lançamento" : "Novo lançamento", bodyHtml, footHtml });
+    const modal = RS.openModal({ title: f.id ? t("financeiro.editarLancamento") : t("financeiro.novoLancamento"), bodyHtml, footHtml });
 
     if (f.id) {
       modal.querySelector("#fn-del").addEventListener("click", () => {
-        if (confirm("Excluir este lançamento?")) {
+        if (confirm(t("financeiro.confirmarExclusao"))) {
           storage.remove(ENTITY, f.id);
-          RS.toast("Lançamento excluído.");
+          RS.toast(t("financeiro.lancamentoExcluido"));
           RS.closeModal();
           onSaved();
         }
@@ -2713,7 +3373,7 @@ a { color: inherit; text-decoration: none; }
       const valor = Number(modal.querySelector("#fn-valor").value);
       const data = modal.querySelector("#fn-data").value;
       if (!valor || !data) {
-        RS.toast("Informe valor e data.");
+        RS.toast(t("financeiro.informeValorData"));
         return;
       }
       const payload = {
@@ -2727,16 +3387,15 @@ a { color: inherit; text-decoration: none; }
       };
       const ok = f.id ? storage.update(ENTITY, f.id, payload) : storage.create(ENTITY, payload);
       if (!ok) return;
-      RS.toast("Lançamento salvo.");
+      RS.toast(t("financeiro.lancamentoSalvo"));
       RS.closeModal();
       onSaved();
     });
   }
 
   RS.modules = RS.modules || {};
-  RS.modules.financeiro = { id: "financeiro", label: "Financeiro", subtitle: "Receitas, despesas e pendências", render, renderForClient };
+  RS.modules.financeiro = { id: "financeiro", i18nKey: "nav.financeiro", i18nSubtitleKey: "shell.financeiro.subtitulo", get label() { return RS.I18n.t("nav.financeiro"); }, get subtitle() { return RS.I18n.t("shell.financeiro.subtitulo"); }, render, renderForClient };
 })(window);
-
 
 /* ---- js/modules/documentos.js ---- */
 (function (global) {
@@ -2893,6 +3552,7 @@ a { color: inherit; text-decoration: none; }
 
   function render(container) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     const clientes = storage.list("clientes").sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
     const today = new Date();
     const firstOfMonth = util.toLocalDateStr(new Date(today.getFullYear(), today.getMonth(), 1));
@@ -2900,30 +3560,30 @@ a { color: inherit; text-decoration: none; }
 
     container.innerHTML = `
       <div class="rs-card rs-no-print" style="margin-bottom:18px;">
-        <div class="rs-section-title">Gerar relatório</div>
+        <div class="rs-section-title">${t("relatorios.gerarRelatorio")}</div>
         <div class="rs-field-row">
           <div class="rs-field"><label>${cfg.labels.cliente_singular}</label>
             <select class="rs-select" id="rp-cliente">
-              <option value="">Todos os ${cfg.labels.cliente_plural.toLowerCase()}</option>
+              <option value="">${t("relatorios.todos", { plural: cfg.labels.cliente_plural.toLowerCase() })}</option>
               ${clientes.map((c) => `<option value="${c.id}">${util.escapeHtml(c.nome)}</option>`).join("")}
             </select>
           </div>
-          <div class="rs-field"><label>Tipo</label>
+          <div class="rs-field"><label>${t("timeline.tipo")}</label>
             <select class="rs-select" id="rp-tipo">
-              <option value="resumo">Resumo do cliente</option>
-              <option value="periodo">Relatório por período</option>
-              <option value="mensal">Relatório mensal</option>
-              <option value="historico">Histórico completo</option>
+              <option value="resumo">${t("relatorios.resumoCliente")}</option>
+              <option value="periodo">${t("relatorios.porPeriodo")}</option>
+              <option value="mensal">${t("relatorios.mensal")}</option>
+              <option value="historico">${t("relatorios.historicoCompleto")}</option>
             </select>
           </div>
         </div>
         <div class="rs-field-row" id="rp-periodo">
-          <div class="rs-field"><label>De</label><input type="date" class="rs-input" id="rp-de" value="${firstOfMonth}"></div>
-          <div class="rs-field"><label>Até</label><input type="date" class="rs-input" id="rp-ate" value="${todayStr}"></div>
+          <div class="rs-field"><label>${t("relatorios.de")}</label><input type="date" class="rs-input" id="rp-de" value="${firstOfMonth}"></div>
+          <div class="rs-field"><label>${t("relatorios.ate")}</label><input type="date" class="rs-input" id="rp-ate" value="${todayStr}"></div>
         </div>
         <div style="display:flex; gap:10px;">
-          <button class="rs-btn rs-btn-primary" id="rp-gerar">${RS.icon("chart", 14)} Gerar relatório</button>
-          <button class="rs-btn rs-btn-ghost" id="rp-print" style="display:none;">${RS.icon("printer", 14)} Exportar / Imprimir (PDF)</button>
+          <button class="rs-btn rs-btn-primary" id="rp-gerar">${RS.icon("chart", 14)} ${t("relatorios.gerarRelatorio")}</button>
+          <button class="rs-btn rs-btn-ghost" id="rp-print" style="display:none;">${RS.icon("printer", 14)} ${t("relatorios.exportarImprimir")}</button>
         </div>
       </div>
       <div id="rp-output"></div>
@@ -2941,6 +3601,7 @@ a { color: inherit; text-decoration: none; }
 
   function generate(container) {
     const cfg = RS.config;
+    const t = RS.I18n.t;
     const clienteId = container.querySelector("#rp-cliente").value;
     const tipo = container.querySelector("#rp-tipo").value;
     const de = container.querySelector("#rp-de").value;
@@ -2972,7 +3633,7 @@ a { color: inherit; text-decoration: none; }
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
             <div>
               <h3 style="font-size:16px;">${util.escapeHtml(c.nome)}</h3>
-              <div style="font-size:12px; color:var(--rs-ink-faint); margin-top:2px;">${util.escapeHtml(c.profissao || c.escola || "")} · desde ${util.formatDate(c.dataInicio)}</div>
+              <div style="font-size:12px; color:var(--rs-ink-faint); margin-top:2px;">${util.escapeHtml(c.profissao || c.escola || "")} · ${t("clientes.desde")} ${util.formatDate(c.dataInicio)}</div>
             </div>
             <span class="rs-badge rs-badge-blue">${atsCliente.length} ${cfg.labels.atendimento_plural.toLowerCase()}</span>
           </div>
@@ -2980,10 +3641,10 @@ a { color: inherit; text-decoration: none; }
             <div style="font-size:13px; line-height:1.6; margin-bottom:10px;"><strong>${util.escapeHtml(cfg.labels.objetivos)}:</strong> ${util.escapeHtml(c.objetivos) || "—"}</div>
             <div style="font-size:13px; line-height:1.6; margin-bottom:10px;"><strong>${util.escapeHtml(cfg.labels.diagnostico)}:</strong> ${util.escapeHtml(c.diagnostico) || "—"}</div>
           ` : ""}
-          <div style="font-size:13px; color:var(--rs-ink-soft); margin-bottom:6px;">Recebido: <strong>${util.formatCurrency(totalPago)}</strong> · Pendente: <strong>${util.formatCurrency(totalPendente)}</strong></div>
+          <div style="font-size:13px; color:var(--rs-ink-soft); margin-bottom:6px;">${t("relatorios.recebido")}: <strong>${util.formatCurrency(totalPago)}</strong> · ${t("relatorios.pendente")}: <strong>${util.formatCurrency(totalPendente)}</strong></div>
           ${atsCliente.length ? `
             <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:12.5px;">
-              <thead><tr style="text-align:left; color:var(--rs-ink-faint);"><th style="padding:6px 4px;">Data</th><th style="padding:6px 4px;">Tipo</th><th style="padding:6px 4px;">Objetivos</th><th style="padding:6px 4px;">Observações</th></tr></thead>
+              <thead><tr style="text-align:left; color:var(--rs-ink-faint);"><th style="padding:6px 4px;">${t("relatorios.data")}</th><th style="padding:6px 4px;">${t("timeline.tipo")}</th><th style="padding:6px 4px;">${t("relatorios.objetivos")}</th><th style="padding:6px 4px;">${t("comum.observacoes")}</th></tr></thead>
               <tbody>
                 ${atsCliente
                   .map(
@@ -2996,7 +3657,7 @@ a { color: inherit; text-decoration: none; }
                   )
                   .join("")}
               </tbody>
-            </table>` : `<p style="font-size:12.5px; color:var(--rs-ink-faint);">Nenhum atendimento no período selecionado.</p>`}
+            </table>` : `<p style="font-size:12.5px; color:var(--rs-ink-faint);">${t("relatorios.nenhumNoPeriodo")}</p>`}
         </div>`;
       })
       .join("");
@@ -3005,18 +3666,17 @@ a { color: inherit; text-decoration: none; }
       <div class="rs-card" style="margin-bottom:16px; background:var(--rs-gray-light); border:none; box-shadow:none;">
         <div style="font-family:var(--font-display); font-weight:650; font-size:15px;">${util.escapeHtml(cfg.marca.nome)}</div>
         <div style="font-size:12px; color:var(--rs-ink-faint); margin-top:2px;">
-          ${util.escapeHtml(cfg.profissional.nome || "")} ${cfg.profissional.especialidade ? "· " + util.escapeHtml(cfg.profissional.especialidade) : ""} · Emitido em ${util.formatDate(new Date().toISOString())}
-          ${tipo !== "resumo" ? " · Período: " + util.formatDate(de) + " a " + util.formatDate(ate) : ""}
+          ${util.escapeHtml(cfg.profissional.nome || "")} ${cfg.profissional.especialidade ? "· " + util.escapeHtml(cfg.profissional.especialidade) : ""} · ${t("relatorios.emitidoEm")} ${util.formatDate(new Date().toISOString())}
+          ${tipo !== "resumo" ? " · " + t("relatorios.periodo") + ": " + util.formatDate(de) + " a " + util.formatDate(ate) : ""}
         </div>
       </div>
-      ${blocks || `<div class="rs-empty">${RS.icon("chart", 34)}<p>Nenhum dado encontrado para os filtros selecionados.</p></div>`}
+      ${blocks || `<div class="rs-empty">${RS.icon("chart", 34)}<p>${t("relatorios.nenhumDado")}</p></div>`}
     `;
   }
 
   RS.modules = RS.modules || {};
-  RS.modules.relatorios = { id: "relatorios", label: "Relatórios", subtitle: "Resumos e exportação em PDF", render };
+  RS.modules.relatorios = { id: "relatorios", i18nKey: "nav.relatorios", i18nSubtitleKey: "shell.relatorios.subtitulo", get label() { return RS.I18n.t("nav.relatorios"); }, get subtitle() { return RS.I18n.t("shell.relatorios.subtitulo"); }, render };
 })(window);
-
 
 /* ---- js/modules/configuracoes.js ---- */
 (function (global) {
@@ -3028,72 +3688,79 @@ a { color: inherit; text-decoration: none; }
     const cfg = RS.config;
     container.innerHTML = `
       <div class="rs-grid rs-grid-2" style="align-items:start;">
+        <div class="rs-card" style="grid-column:1/-1;">
+          <div class="rs-section-title" data-i18n="ajuda.titulo">${RS.I18n.t("ajuda.titulo")}</div>
+          <p style="font-size:13px; color:var(--rs-ink-soft); margin-bottom:10px;" data-i18n="ajuda.texto">${RS.I18n.t("ajuda.texto")}</p>
+          <button class="rs-btn rs-btn-ghost" id="cf-guia">${RS.icon("file", 14)} <span data-i18n="ajuda.botao">${RS.I18n.t("ajuda.botao")}</span></button>
+        </div>
+
         <div class="rs-card">
-          <div class="rs-section-title">Identidade do profissional</div>
-          <div class="rs-field"><label>Nome do profissional</label><input class="rs-input" id="cf-nome" value="${util.escapeHtml(cfg.profissional.nome)}"></div>
-          <div class="rs-field"><label>Especialidade</label><input class="rs-input" id="cf-esp" value="${util.escapeHtml(cfg.profissional.especialidade)}"></div>
-          <div class="rs-field"><label>Cor principal</label>
+          <div class="rs-section-title" data-i18n="config.identidade">${RS.I18n.t("config.identidade")}</div>
+          <div class="rs-field"><label data-i18n="config.nomeProfissional">${RS.I18n.t("config.nomeProfissional")}</label><input class="rs-input" id="cf-nome" value="${util.escapeHtml(cfg.profissional.nome)}"></div>
+          <div class="rs-field"><label data-i18n="config.especialidade">${RS.I18n.t("config.especialidade")}</label><input class="rs-input" id="cf-esp" value="${util.escapeHtml(cfg.profissional.especialidade)}"></div>
+          <div class="rs-field"><label data-i18n="config.corPrincipal">${RS.I18n.t("config.corPrincipal")}</label>
             <div style="display:flex; gap:10px; margin-top:4px;">
               ${["blue", "pink", "yellow", "lilac"].map((c) => swatch(c, cfg.profissional.corPrincipal === c)).join("")}
             </div>
           </div>
-          <button class="rs-btn rs-btn-primary" id="cf-save-prof" style="margin-top:6px;">${RS.icon("check", 14)} Salvar identidade</button>
+          <button class="rs-btn rs-btn-primary" id="cf-save-prof" style="margin-top:6px;">${RS.icon("check", 14)} <span data-i18n="config.salvarIdentidade">${RS.I18n.t("config.salvarIdentidade")}</span></button>
         </div>
 
         <div class="rs-card">
-          <div class="rs-section-title">Terminologia (rótulos do sistema)</div>
-          <div class="rs-field"><label>Nome do cliente (singular)</label><input class="rs-input" id="cf-lab-cs" value="${util.escapeHtml(cfg.labels.cliente_singular)}"></div>
-          <div class="rs-field"><label>Nome do cliente (plural)</label><input class="rs-input" id="cf-lab-cp" value="${util.escapeHtml(cfg.labels.cliente_plural)}"></div>
-          <div class="rs-field"><label>Nome do atendimento (singular)</label><input class="rs-input" id="cf-lab-as" value="${util.escapeHtml(cfg.labels.atendimento_singular)}"></div>
-          <div class="rs-field"><label>Nome do atendimento (plural)</label><input class="rs-input" id="cf-lab-ap" value="${util.escapeHtml(cfg.labels.atendimento_plural)}"></div>
-          <button class="rs-btn rs-btn-primary" id="cf-save-lab" style="margin-top:6px;">${RS.icon("check", 14)} Salvar terminologia</button>
-          <p style="font-size:11.5px; color:var(--rs-ink-faint); margin-top:10px;">É assim que a plataforma-base se adapta a cada profissão sem reconstruir o sistema.</p>
+          <div class="rs-section-title" data-i18n="config.terminologia">${RS.I18n.t("config.terminologia")}</div>
+          <div class="rs-field"><label data-i18n="config.nomeClienteSingular">${RS.I18n.t("config.nomeClienteSingular")}</label><input class="rs-input" id="cf-lab-cs" value="${util.escapeHtml(cfg.labels.cliente_singular)}"></div>
+          <div class="rs-field"><label data-i18n="config.nomeClientePlural">${RS.I18n.t("config.nomeClientePlural")}</label><input class="rs-input" id="cf-lab-cp" value="${util.escapeHtml(cfg.labels.cliente_plural)}"></div>
+          <div class="rs-field"><label data-i18n="config.nomeAtendimentoSingular">${RS.I18n.t("config.nomeAtendimentoSingular")}</label><input class="rs-input" id="cf-lab-as" value="${util.escapeHtml(cfg.labels.atendimento_singular)}"></div>
+          <div class="rs-field"><label data-i18n="config.nomeAtendimentoPlural">${RS.I18n.t("config.nomeAtendimentoPlural")}</label><input class="rs-input" id="cf-lab-ap" value="${util.escapeHtml(cfg.labels.atendimento_plural)}"></div>
+          <button class="rs-btn rs-btn-primary" id="cf-save-lab" style="margin-top:6px;">${RS.icon("check", 14)} <span data-i18n="config.salvarTerminologia">${RS.I18n.t("config.salvarTerminologia")}</span></button>
+          <p style="font-size:11.5px; color:var(--rs-ink-faint); margin-top:10px;" data-i18n="config.terminologiaExplicacao">${RS.I18n.t("config.terminologiaExplicacao")}</p>
         </div>
 
         <div class="rs-card">
-          <div class="rs-section-title">Tipos de atendimento</div>
+          <div class="rs-section-title" data-i18n="config.tiposAtendimento">${RS.I18n.t("config.tiposAtendimento")}</div>
           <div id="cf-tipos"></div>
           <div style="display:flex; gap:8px; margin-top:10px;">
-            <input class="rs-input" id="cf-tipo-new" placeholder="Novo tipo...">
+            <input class="rs-input" id="cf-tipo-new" placeholder="${RS.I18n.t("config.novoTipo")}" data-i18n-placeholder="config.novoTipo">
             <button class="rs-btn rs-btn-ghost" id="cf-tipo-add">${RS.icon("plus", 14)}</button>
           </div>
         </div>
 
         <div class="rs-card">
-          <div class="rs-section-title">Categorias financeiras</div>
+          <div class="rs-section-title" data-i18n="config.categoriasFinanceiras">${RS.I18n.t("config.categoriasFinanceiras")}</div>
           <div id="cf-cats"></div>
           <div style="display:flex; gap:8px; margin-top:10px;">
-            <input class="rs-input" id="cf-cat-new" placeholder="Nova categoria...">
+            <input class="rs-input" id="cf-cat-new" placeholder="${RS.I18n.t("config.novaCategoria")}" data-i18n-placeholder="config.novaCategoria">
             <button class="rs-btn rs-btn-ghost" id="cf-cat-add">${RS.icon("plus", 14)}</button>
           </div>
         </div>
 
         ${RS.sync.supabaseConfigurado() ? `
         <div class="rs-card" style="grid-column:1/-1;">
-          <div class="rs-section-title">Conta e sincronização</div>
+          <div class="rs-section-title" data-i18n="conta.sincronizacao.titulo">${RS.I18n.t("conta.sincronizacao.titulo")}</div>
+          <div id="cf-conn-badge" style="display:inline-flex; align-items:center; gap:6px; margin-bottom:10px;"></div>
           <p style="font-size:13px; color:var(--rs-ink-soft); margin-bottom:12px;">
             ${syncStatusText()}
           </p>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="rs-btn rs-btn-ghost" id="cf-minha-conta">${RS.icon("edit", 14)} Minha conta</button>
-            <button class="rs-btn rs-btn-ghost" id="cf-logout">${RS.icon("close", 14)} Trocar de conta</button>
+            <button class="rs-btn rs-btn-ghost" id="cf-minha-conta">${RS.icon("edit", 14)} <span data-i18n="minhaConta.editar">${RS.I18n.t("minhaConta.editar")}</span></button>
+            <button class="rs-btn rs-btn-ghost" id="cf-logout">${RS.icon("close", 14)} <span data-i18n="minhaConta.trocarConta">${RS.I18n.t("minhaConta.trocarConta")}</span></button>
           </div>
         </div>` : `
         <div class="rs-card" style="grid-column:1/-1;">
-          <div class="rs-section-title">Conta e sincronização</div>
-          <p style="font-size:13px; color:var(--rs-ink-soft);">Este app ainda está rodando só neste aparelho (sem login). Para sincronizar entre dispositivos, é preciso configurar o Supabase no arquivo — fale com quem mantém o app.</p>
+          <div class="rs-section-title" data-i18n="conta.sincronizacao.titulo">${RS.I18n.t("conta.sincronizacao.titulo")}</div>
+          <p style="font-size:13px; color:var(--rs-ink-soft);" data-i18n="sync.naoConfigurado">${RS.I18n.t("sync.naoConfigurado")}</p>
         </div>`}
 
         <div class="rs-card" style="grid-column:1/-1;">
-          <div class="rs-section-title">Armazenamento e backup</div>
+          <div class="rs-section-title" data-i18n="backup.titulo">${RS.I18n.t("backup.titulo")}</div>
           <div id="cf-usage" style="margin-bottom:16px;"></div>
-          <p style="font-size:13px; color:var(--rs-ink-soft); margin-bottom:12px;">Exporta todos os dados armazenados localmente (clientes, atendimentos, agenda, financeiro, documentos) em um arquivo JSON — use para levar seus dados a outro dispositivo/navegador ou como cópia de segurança.</p>
+          <p style="font-size:13px; color:var(--rs-ink-soft); margin-bottom:12px;" data-i18n="backup.texto">${RS.I18n.t("backup.texto")}</p>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="rs-btn rs-btn-ghost" id="cf-export">${RS.icon("upload", 14)} Exportar backup (.json)</button>
-            <button class="rs-btn rs-btn-ghost" id="cf-import">${RS.icon("folder", 14)} Importar backup (.json)</button>
+            <button class="rs-btn rs-btn-ghost" id="cf-export">${RS.icon("upload", 14)} <span data-i18n="backup.exportar">${RS.I18n.t("backup.exportar")}</span></button>
+            <button class="rs-btn rs-btn-ghost" id="cf-import">${RS.icon("folder", 14)} <span data-i18n="backup.importar">${RS.I18n.t("backup.importar")}</span></button>
             <input type="file" accept="application/json" id="cf-import-file" style="display:none;">
           </div>
-          <p style="font-size:11.5px; color:var(--rs-ink-faint); margin-top:10px;">Importar substitui os dados atuais das entidades presentes no arquivo. Recomendamos exportar um backup antes de importar.</p>
+          <p style="font-size:11.5px; color:var(--rs-ink-faint); margin-top:10px;" data-i18n="backup.aviso">${RS.I18n.t("backup.aviso")}</p>
         </div>
       </div>
     `;
@@ -3123,27 +3790,27 @@ a { color: inherit; text-decoration: none; }
           corPrincipal: chosen ? chosen.dataset.swatch : cfg.profissional.corPrincipal,
         },
       });
-      RS.toast("Identidade atualizada.");
+      RS.toast(RS.I18n.t("config.identidadeAtualizada"));
       location.reload();
     });
 
     container.querySelector("#cf-save-lab").addEventListener("click", () => {
       cfg.save({
         labels: {
-          cliente_singular: container.querySelector("#cf-lab-cs").value.trim() || "Cliente",
-          cliente_plural: container.querySelector("#cf-lab-cp").value.trim() || "Clientes",
-          atendimento_singular: container.querySelector("#cf-lab-as").value.trim() || "Atendimento",
-          atendimento_plural: container.querySelector("#cf-lab-ap").value.trim() || "Atendimentos",
+          cliente_singular: container.querySelector("#cf-lab-cs").value.trim() || RS.I18n.t("config.clienteDefault"),
+          cliente_plural: container.querySelector("#cf-lab-cp").value.trim() || RS.I18n.t("config.clientesDefault"),
+          atendimento_singular: container.querySelector("#cf-lab-as").value.trim() || RS.I18n.t("config.atendimentoDefault"),
+          atendimento_plural: container.querySelector("#cf-lab-ap").value.trim() || RS.I18n.t("config.atendimentosDefault"),
         },
       });
-      RS.toast("Terminologia atualizada.");
+      RS.toast(RS.I18n.t("config.terminologiaAtualizada"));
       location.reload();
     });
 
     const logoutBtn = container.querySelector("#cf-logout");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", () => {
-        if (!confirm("Sair desta conta? Os dados continuam salvos neste aparelho, mas você precisará entrar de novo para sincronizar.")) return;
+        if (!confirm(RS.I18n.t("minhaConta.confirmarSaida"))) return;
         RS.gate.limparContaAtiva();
         location.reload();
       });
@@ -3153,6 +3820,11 @@ a { color: inherit; text-decoration: none; }
     if (minhaContaBtn) {
       minhaContaBtn.addEventListener("click", abrirMinhaConta);
     }
+
+    const connBadge = container.querySelector("#cf-conn-badge");
+    if (connBadge) connBadge.innerHTML = renderConnBadgeHtml();
+
+    container.querySelector("#cf-guia").addEventListener("click", abrirGuia);
 
     container.querySelector("#cf-export").addEventListener("click", () => {
       const dump = storage.exportAll(["clientes", "atendimentos", "agenda", "financeiro", "documentos"]);
@@ -3165,7 +3837,7 @@ a { color: inherit; text-decoration: none; }
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      RS.toast("Backup exportado.");
+      RS.toast(RS.I18n.t("config.backupExportado"));
     });
 
     const importInput = container.querySelector("#cf-import-file");
@@ -3173,7 +3845,7 @@ a { color: inherit; text-decoration: none; }
     importInput.addEventListener("change", () => {
       const file = importInput.files && importInput.files[0];
       if (!file) return;
-      if (!confirm("Importar este backup vai SUBSTITUIR os dados atuais das entidades presentes no arquivo. Deseja continuar?")) {
+      if (!confirm(RS.I18n.t("config.confirmarImportar"))) {
         importInput.value = "";
         return;
       }
@@ -3183,15 +3855,15 @@ a { color: inherit; text-decoration: none; }
         try {
           parsed = JSON.parse(reader.result);
         } catch (e) {
-          RS.toast("Arquivo inválido: não é um JSON válido.");
+          RS.toast(RS.I18n.t("config.ficheiroInvalido"));
           return;
         }
         const res = storage.importAll(parsed);
         if (!res.ok) {
-          RS.toast(res.reason || "Não foi possível importar o backup.");
+          RS.toast(res.reason || RS.I18n.t("config.falhaImportar"));
           return;
         }
-        RS.toast("Backup importado com sucesso.");
+        RS.toast(RS.I18n.t("config.backupImportado"));
         renderUsage(container.querySelector("#cf-usage"));
       };
       reader.readAsText(file);
@@ -3201,35 +3873,106 @@ a { color: inherit; text-decoration: none; }
 
   function syncStatusText() {
     const ok = RS.sync.estaSincronizado();
-    return ok
-      ? "🟢 Sincronizado com a nuvem. Seus dados estão disponíveis em qualquer aparelho onde você entrar com a mesma conta."
-      : "🔴 Sincronizando (ou offline no momento) — os dados continuam salvos normalmente neste aparelho e serão enviados assim que houver internet.";
+    return ok ? RS.I18n.t("sync.sincronizado") : RS.I18n.t("sync.aSincronizar");
+  }
+
+  // Pontinho + rótulo minúsculo (ON-LINE / OFF-LINE) — conectividade real
+  // do navegador, separado do estado de sincronização acima.
+  function renderConnBadgeHtml() {
+    const online = typeof navigator !== "undefined" ? navigator.onLine !== false : true;
+    const cor = online ? "#2FA84F" : "#B4B4B4";
+    const texto = online ? RS.I18n.t("sync.online") : RS.I18n.t("sync.offline");
+    return `<span style="width:7px; height:7px; border-radius:50%; background:${cor}; display:inline-block;"></span>` +
+      `<span style="font-size:10px; font-weight:700; letter-spacing:.04em; color:${cor};">${texto}</span>`;
+  }
+
+  // Um único listener global (nunca se acumula, mesmo entrando e saindo
+  // de Configurações repetidas vezes) — só atualiza o badge se ele
+  // estiver montado na tela neste momento.
+  if (typeof window.addEventListener === "function") {
+    const atualizarConnBadgeSeVisivel = () => {
+      const el = document.getElementById("cf-conn-badge");
+      if (el) el.innerHTML = renderConnBadgeHtml();
+    };
+    window.addEventListener("online", atualizarConnBadgeSeVisivel);
+    window.addEventListener("offline", atualizarConnBadgeSeVisivel);
+  }
+
+  // Guia rápido do app — explica cada área em linguagem simples, usando
+  // a terminologia que a pessoa configurou (ex.: "Sessões" em vez de
+  // "Atendimentos", se ela tiver trocado).
+  function abrirGuia() {
+    const t = RS.I18n.t;
+    const cfg = RS.config;
+    const clientePlural = cfg.labels.cliente_plural || "Clientes";
+    const passo = (titulo, texto) => `
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:700; font-size:14px; margin-bottom:3px;">${titulo}</div>
+        <div style="font-size:13px; color:var(--rs-ink-soft); line-height:1.5;">${texto}</div>
+      </div>`;
+    const bodyHtml = `
+      ${passo("📋 " + clientePlural, t("guia.clientes.texto"))}
+      ${passo(t("guia.agenda.titulo"), t("guia.agenda.texto"))}
+      ${passo(t("guia.financeiro.titulo"), t("guia.financeiro.texto"))}
+      ${passo(t("guia.relatorios.titulo"), t("guia.relatorios.texto"))}
+      ${passo(t("guia.configuracoes.titulo"), t("guia.configuracoes.texto"))}
+      ${passo(t("guia.sync.titulo"), t("guia.sync.texto"))}
+      ${passo(t("guia.backup.titulo"), t("guia.backup.texto"))}
+    `;
+    const footHtml = `<button class="rs-btn rs-btn-primary" id="guia-fechar" data-i18n="guia.fechar">${t("guia.fechar")}</button>`;
+    const modal = RS.openModal({ title: t("guia.titulo"), bodyHtml, footHtml });
+    modal.querySelector("#guia-fechar").addEventListener("click", () => RS.closeModal());
   }
 
   // Edita e-mail, usuário e PIN da conta ativa — mesmo padrão do
   // ela.organiza (client.auth.updateUser + profiles.update).
   function abrirMinhaConta() {
+    const t = RS.I18n.t;
     const conta = RS.gate.contaAtivaSalva();
     if (!conta) { RS.toast("Nenhuma conta ativa encontrada."); return; }
     const emailAtual = conta.email || "";
     const labelAtual = conta.label || "";
     const sufixoAtual = labelAtual.replace(/^ela\.+/, "");
+    const idiomaAtual = RS.I18n.obterIdioma();
 
     const bodyHtml = `
-      <div class="rs-field"><label>E-mail</label><input type="email" class="rs-input" id="mc-email" value="${util.escapeHtml(emailAtual)}" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
+      <div class="rs-field"><label data-i18n="minhaConta.email.label">${t("minhaConta.email.label")}</label><input type="email" class="rs-input" id="mc-email" value="${util.escapeHtml(emailAtual)}" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
       <div class="rs-field">
-        <label>Usuário</label>
+        <label data-i18n="minhaConta.utilizador.label">${t("minhaConta.utilizador.label")}</label>
         <div style="display:flex; align-items:center; gap:0;">
           <span class="rs-gate-prefix" style="padding:12px 0 12px 14px; border:1px solid var(--rs-border-soft); border-right:none; border-radius:10px 0 0 10px; color:var(--rs-ink-faint);">ela.</span>
           <input class="rs-input" id="mc-user" value="${util.escapeHtml(sufixoAtual)}" style="border-radius:0 10px 10px 0;" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
         </div>
       </div>
-      <div class="rs-field"><label>Novo PIN (4 dígitos, opcional)</label><input type="password" class="rs-input" id="mc-pin" placeholder="Deixe em branco para manter o atual" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"></div>
+      <div class="rs-field"><label data-i18n="minhaConta.pin.label">${t("minhaConta.pin.label")}</label><input type="password" class="rs-input" id="mc-pin" placeholder="${t("minhaConta.pin.placeholder")}" data-i18n-placeholder="minhaConta.pin.placeholder" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"></div>
+      <div class="rs-field">
+        <label data-i18n="minhaConta.idioma.titulo">${t("minhaConta.idioma.titulo")}</label>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="rs-btn ${idiomaAtual === "pt-PT" ? "rs-btn-primary" : "rs-btn-ghost"}" id="mc-idioma-pt" data-i18n="minhaConta.idioma.pt-PT">${t("minhaConta.idioma.pt-PT")}</button>
+          <button type="button" class="rs-btn ${idiomaAtual === "pt-BR" ? "rs-btn-primary" : "rs-btn-ghost"}" id="mc-idioma-br" data-i18n="minhaConta.idioma.pt-BR">${t("minhaConta.idioma.pt-BR")}</button>
+        </div>
+      </div>
       <p id="mc-error" style="display:none; color:#D64545; font-size:13px; margin-top:4px;"></p>
     `;
-    const footHtml = `<button class="rs-btn rs-btn-primary" id="mc-salvar">${RS.icon("check", 14)} Salvar alterações</button>`;
+    const footHtml = `<button class="rs-btn rs-btn-primary" id="mc-salvar" data-i18n="minhaConta.guardar">${t("minhaConta.guardar")}</button>`;
 
-    const modal = RS.openModal({ title: "Minha conta", bodyHtml, footHtml });
+    const modal = RS.openModal({ title: t("minhaConta.titulo"), bodyHtml, footHtml });
+    modal.querySelector(".rs-modal-head h3").setAttribute("data-i18n", "minhaConta.titulo");
+
+    modal.querySelector("#mc-idioma-pt").addEventListener("click", () => {
+      RS.I18n.definirIdioma("pt-PT");
+      modal.querySelector("#mc-idioma-pt").classList.add("rs-btn-primary");
+      modal.querySelector("#mc-idioma-pt").classList.remove("rs-btn-ghost");
+      modal.querySelector("#mc-idioma-br").classList.add("rs-btn-ghost");
+      modal.querySelector("#mc-idioma-br").classList.remove("rs-btn-primary");
+    });
+    modal.querySelector("#mc-idioma-br").addEventListener("click", () => {
+      RS.I18n.definirIdioma("pt-BR");
+      modal.querySelector("#mc-idioma-br").classList.add("rs-btn-primary");
+      modal.querySelector("#mc-idioma-br").classList.remove("rs-btn-ghost");
+      modal.querySelector("#mc-idioma-pt").classList.add("rs-btn-ghost");
+      modal.querySelector("#mc-idioma-pt").classList.remove("rs-btn-primary");
+    });
 
     const userInput = modal.querySelector("#mc-user");
     userInput.addEventListener("input", function () {
@@ -3246,13 +3989,13 @@ a { color: inherit; text-decoration: none; }
       const novoUsuario = novoSufixo ? "ela." + novoSufixo : "";
       const novoPin = (modal.querySelector("#mc-pin").value || "").trim();
 
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoEmail)) { mostrarErro("Informe um e-mail válido."); return; }
-      if (!novoUsuario) { mostrarErro("Informe um usuário."); return; }
-      if (novoPin && !/^\d{4}$/.test(novoPin)) { mostrarErro("O PIN precisa ter exatamente 4 dígitos."); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoEmail)) { mostrarErro(t("minhaConta.erro.emailInvalido")); return; }
+      if (!novoUsuario) { mostrarErro(t("minhaConta.erro.utilizadorObrigatorio")); return; }
+      if (novoPin && !/^\d{4}$/.test(novoPin)) { mostrarErro(t("minhaConta.erro.pinInvalido")); return; }
 
       const btn = modal.querySelector("#mc-salvar");
       btn.disabled = true;
-      btn.textContent = "Salvando...";
+      btn.textContent = t("minhaConta.aGuardar");
 
       RS.syncLoadSupabase((client) => {
         const updates = {};
@@ -3263,14 +4006,14 @@ a { color: inherit; text-decoration: none; }
           if (novoUsuario === labelAtual) { finalizar(); return; }
           client.from("profiles").update({ label: novoUsuario }).eq("id", conta.userId).then((res) => {
             if (res.error) {
-              mostrarErro("Falha ao atualizar usuário (" + res.error.message + ").");
-              btn.disabled = false; btn.textContent = "Salvar alterações";
+              mostrarErro(t("minhaConta.erro.falhaUtilizador") + " (" + res.error.message + ").");
+              btn.disabled = false; btn.textContent = t("minhaConta.guardar");
               return;
             }
             finalizar();
           }).catch((e) => {
-            mostrarErro("Erro de rede: " + e.message);
-            btn.disabled = false; btn.textContent = "Salvar alterações";
+            mostrarErro(t("minhaConta.erro.redeGenerico") + " " + e.message);
+            btn.disabled = false; btn.textContent = t("minhaConta.guardar");
           });
         }
 
@@ -3279,27 +4022,27 @@ a { color: inherit; text-decoration: none; }
             window.localStorage.setItem("rs:activeAccount", JSON.stringify({ userId: conta.userId, label: novoUsuario, email: novoEmail }));
           } catch (e) {}
           RS.closeModal();
-          RS.toast("Conta atualizada.");
+          RS.toast(t("minhaConta.sucesso"));
         }
 
         if (Object.keys(updates).length > 0) {
           client.auth.updateUser(updates).then((res) => {
             if (res.error) {
-              mostrarErro("Falha ao atualizar conta (" + res.error.message + ").");
-              btn.disabled = false; btn.textContent = "Salvar alterações";
+              mostrarErro(t("minhaConta.erro.falhaConta") + " (" + res.error.message + ").");
+              btn.disabled = false; btn.textContent = t("minhaConta.guardar");
               return;
             }
             atualizarPerfilEFinalizar();
           }).catch((e) => {
-            mostrarErro("Erro de rede: " + e.message);
-            btn.disabled = false; btn.textContent = "Salvar alterações";
+            mostrarErro(t("minhaConta.erro.redeGenerico") + " " + e.message);
+            btn.disabled = false; btn.textContent = t("minhaConta.guardar");
           });
         } else {
           atualizarPerfilEFinalizar();
         }
       }, () => {
-        mostrarErro("Sem conexão com a internet.");
-        btn.disabled = false; btn.textContent = "Salvar alterações";
+        mostrarErro(t("minhaConta.erro.semInternet"));
+        btn.disabled = false; btn.textContent = t("minhaConta.guardar");
       });
     });
   }
@@ -3313,12 +4056,12 @@ a { color: inherit; text-decoration: none; }
     const color = pct > 85 ? "#D64545" : pct > 60 ? "var(--rs-yellow)" : "var(--rs-blue)";
     el.innerHTML = `
       <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--rs-ink-soft); margin-bottom:6px;">
-        <span>Espaço usado</span><span>${kb} KB de ~${limitMb} MB (${pct.toFixed(1)}%)</span>
+        <span data-i18n="config.espacoUsado">${RS.I18n.t("config.espacoUsado")}</span><span>${kb} KB de ~${limitMb} MB (${pct.toFixed(1)}%)</span>
       </div>
       <div style="height:8px; border-radius:99px; background:var(--rs-gray-light); overflow:hidden;">
         <div style="height:100%; width:${Math.max(2, pct)}%; background:${color}; border-radius:99px;"></div>
       </div>
-      ${pct > 85 ? `<p style="font-size:11.5px; color:#D64545; margin-top:8px;">Armazenamento quase cheio — exporte um backup e considere arquivar clientes inativos.</p>` : ""}
+      ${pct > 85 ? `<p style="font-size:11.5px; color:#D64545; margin-top:8px;">${RS.I18n.t("config.espacoQuaseCheio")}</p>` : ""}
     `;
   }
 
@@ -3354,7 +4097,7 @@ a { color: inherit; text-decoration: none; }
   }
 
   RS.modules = RS.modules || {};
-  RS.modules.configuracoes = { id: "configuracoes", label: "Configurações", subtitle: "Personalização, terminologia, conta e backup", render };
+  RS.modules.configuracoes = { id: "configuracoes", i18nKey: "nav.configuracoes", i18nSubtitleKey: "shell.configuracoes.subtitulo", get label() { return RS.I18n.t("nav.configuracoes"); }, get subtitle() { return RS.I18n.t("shell.configuracoes.subtitulo"); }, render };
 })(window);
 
 </script>
