@@ -696,6 +696,14 @@ a { color: inherit; text-decoration: none; }
       "guia.sync.texto": "O ponto ao lado de \"Conta e sincronização\" mostra se este aparelho está ON-LINE ou OFF-LINE agora. Os dados são sempre guardados localmente primeiro e enviados para a nuvem assim que houver internet — nada se perde por falta de rede.",
       "guia.backup.titulo": "💾 Cópia de segurança",
       "guia.backup.texto": "Em Definições → Armazenamento e cópia de segurança, dá para exportar tudo num ficheiro .json a qualquer momento.",
+      "guia.privacidade.titulo": "🔒 Privacidade",
+      "guia.privacidade.texto": "Os teus dados são sempre guardados primeiro neste aparelho e só vão para a nuvem se a sincronização estiver ativa. Em Definições → Privacidade encontras a política de privacidade completa da família ela., com o que é tratado, para quê e como exerceres os teus direitos.",
+
+      "config.privacidade.titulo": "Privacidade",
+      "config.privacidade.texto": "Política de privacidade da família ela.: que dados são tratados, para que finalidades, e como podes exercer os teus direitos (acesso, retificação, apagamento e outros).",
+      "config.privacidade.botao": "Ver política de privacidade",
+      "privacidade.titulo": "Política de Privacidade",
+      "privacidade.fechar": "Entendi",
 
       "minhaConta.titulo": "Minha conta",
       "minhaConta.email.label": "E-mail",
@@ -966,6 +974,14 @@ a { color: inherit; text-decoration: none; }
       "guia.sync.texto": "O pontinho ao lado de \"Conta e sincronização\" mostra se este aparelho está ON-LINE ou OFF-LINE agora. Os dados são sempre guardados localmente primeiro e enviados para a nuvem assim que houver internet — nada se perde por falta de rede.",
       "guia.backup.titulo": "💾 Backup",
       "guia.backup.texto": "Em Configurações → Armazenamento e backup, dá para exportar tudo num arquivo .json a qualquer momento.",
+      "guia.privacidade.titulo": "🔒 Privacidade",
+      "guia.privacidade.texto": "Seus dados são sempre guardados primeiro neste aparelho e só vão para a nuvem se a sincronização estiver ativa. Em Configurações → Privacidade você encontra a política de privacidade completa da família ela., com o que é tratado, para quê e como exercer seus direitos.",
+
+      "config.privacidade.titulo": "Privacidade",
+      "config.privacidade.texto": "Política de privacidade da família ela.: quais dados são tratados, para quais finalidades, e como você pode exercer seus direitos (acesso, retificação, exclusão e outros).",
+      "config.privacidade.botao": "Ver política de privacidade",
+      "privacidade.titulo": "Política de Privacidade",
+      "privacidade.fechar": "Entendi",
 
       "minhaConta.titulo": "Minha conta",
       "minhaConta.email.label": "E-mail",
@@ -3762,6 +3778,12 @@ a { color: inherit; text-decoration: none; }
           </div>
           <p style="font-size:11.5px; color:var(--rs-ink-faint); margin-top:10px;" data-i18n="backup.aviso">${RS.I18n.t("backup.aviso")}</p>
         </div>
+
+        <div class="rs-card" style="grid-column:1/-1;">
+          <div class="rs-section-title" data-i18n="config.privacidade.titulo">${RS.I18n.t("config.privacidade.titulo")}</div>
+          <p style="font-size:13px; color:var(--rs-ink-soft); margin-bottom:12px;" data-i18n="config.privacidade.texto">${RS.I18n.t("config.privacidade.texto")}</p>
+          <button class="rs-btn rs-btn-ghost" id="cf-privacidade">${RS.icon("file", 14)} <span data-i18n="config.privacidade.botao">${RS.I18n.t("config.privacidade.botao")}</span></button>
+        </div>
       </div>
     `;
 
@@ -3825,6 +3847,7 @@ a { color: inherit; text-decoration: none; }
     if (connBadge) connBadge.innerHTML = renderConnBadgeHtml();
 
     container.querySelector("#cf-guia").addEventListener("click", abrirGuia);
+    container.querySelector("#cf-privacidade").addEventListener("click", abrirPrivacidade);
 
     container.querySelector("#cf-export").addEventListener("click", () => {
       const dump = storage.exportAll(["clientes", "atendimentos", "agenda", "financeiro", "documentos"]);
@@ -3918,10 +3941,154 @@ a { color: inherit; text-decoration: none; }
       ${passo(t("guia.configuracoes.titulo"), t("guia.configuracoes.texto"))}
       ${passo(t("guia.sync.titulo"), t("guia.sync.texto"))}
       ${passo(t("guia.backup.titulo"), t("guia.backup.texto"))}
+      ${passo(t("guia.privacidade.titulo"), t("guia.privacidade.texto"))}
     `;
     const footHtml = `<button class="rs-btn rs-btn-primary" id="guia-fechar" data-i18n="guia.fechar">${t("guia.fechar")}</button>`;
     const modal = RS.openModal({ title: t("guia.titulo"), bodyHtml, footHtml });
     modal.querySelector("#guia-fechar").addEventListener("click", () => RS.closeModal());
+  }
+
+  // Política de privacidade completa da família ela. (Rota Singular) —
+  // aberta a partir de Configurações → Privacidade.
+  function abrirPrivacidade() {
+    const t = RS.I18n.t;
+    const bodyHtml = privacidadeHtml();
+    const footHtml = `<button class="rs-btn rs-btn-primary" id="privacidade-fechar" data-i18n="privacidade.fechar">${t("privacidade.fechar")}</button>`;
+    const modal = RS.openModal({ title: t("privacidade.titulo"), bodyHtml, footHtml, wide: true });
+    modal.querySelector("#privacidade-fechar").addEventListener("click", () => RS.closeModal());
+  }
+
+  function privacidadeHtml() {
+    const secao = (titulo, corpoHtml) => `
+      <div style="margin-bottom:18px;">
+        <div style="font-weight:700; font-size:13.5px; margin-bottom:5px;">${titulo}</div>
+        <div style="font-size:12.5px; color:var(--rs-ink-soft); line-height:1.55;">${corpoHtml}</div>
+      </div>`;
+    const lista = (itens) => `<ul style="margin:6px 0 0 18px; padding:0;">${itens.map((i) => `<li style="margin-bottom:3px;">${i}</li>`).join("")}</ul>`;
+    return `
+      <p style="font-size:11.5px; color:var(--rs-ink-faint); margin-bottom:4px;">Família ela. · Rota Singular</p>
+      <p style="font-size:11.5px; color:var(--rs-ink-faint); margin-bottom:14px;">Última atualização: setembro de 2026</p>
+      <p style="font-size:12.5px; color:var(--rs-ink-soft); line-height:1.55; margin-bottom:6px;">A família ela. é um conjunto de soluções digitais desenvolvidas pela Rota Singular, projeto de criação e desenvolvimento de soluções digitais de Carla Assis.</p>
+      <p style="font-size:12.5px; color:var(--rs-ink-soft); line-height:1.55; margin-bottom:6px;">Esta Política de Privacidade estabelece as regras gerais aplicáveis ao tratamento de dados pessoais realizado no âmbito dos aplicativos e soluções que integram a família ela., incluindo os produtos atuais e futuros que adotem esta política. Aplica-se, conforme a natureza de cada solução, aos aplicativos, contas de utilizador, funcionalidades, sistemas de armazenamento, sincronização, suporte e demais recursos digitais disponibilizados pela família ela.</p>
+      <p style="font-size:12.5px; color:var(--rs-ink-soft); line-height:1.55; margin-bottom:18px;">Quando determinado aplicativo possuir características ou tratamentos específicos que exijam informação adicional, poderá existir uma informação complementar de privacidade própria desse aplicativo.</p>
+
+      ${secao("1. Quem é responsável pelo tratamento dos dados", `O tratamento de dados pessoais realizado no âmbito dos aplicativos da família ela. é da responsabilidade de:<br><br><strong>Carla Assis</strong> — Responsável pelo projeto Rota Singular<br>E-mail: contato@rotasingular.com<br><br>A Rota Singular é o projeto através do qual Carla Assis desenvolve e disponibiliza soluções digitais, incluindo os aplicativos da família ela. Esta identificação poderá ser atualizada caso a Rota Singular passe futuramente a operar através de uma pessoa coletiva ou de outra estrutura jurídica.`)}
+
+      ${secao("2. Que dados podem ser tratados", `A natureza dos dados tratados pode variar de acordo com o aplicativo e as funcionalidades utilizadas. Dependendo da solução, poderão ser tratados:
+        ${lista([
+          "dados de identificação",
+          "nome ou nome profissional",
+          "dados de contacto",
+          "endereço de e-mail",
+          "nome de utilizador",
+          "informações de autenticação e acesso",
+          "dados necessários à configuração da conta",
+          "informações introduzidas pelo próprio utilizador",
+          "dados relacionados com a utilização das funcionalidades",
+          "informações necessárias para suporte e atendimento",
+          "dados técnicos necessários ao funcionamento e segurança da aplicação",
+          "informações armazenadas, exportadas ou sincronizadas através das funcionalidades disponibilizadas pelo aplicativo",
+        ])}
+        <br>Cada aplicação poderá tratar apenas as categorias de dados necessárias ao seu funcionamento e às funcionalidades que disponibiliza. A Rota Singular procura respeitar o princípio da minimização dos dados, evitando recolher informações que não sejam necessárias para a finalidade pretendida.`)}
+
+      ${secao("3. Dados introduzidos pelo utilizador", `Algumas funcionalidades da família ela. permitem ao utilizador criar, registar, organizar, consultar, editar, exportar ou armazenar informações. Esses dados são introduzidos pelo próprio utilizador e podem variar significativamente de acordo com a finalidade de cada aplicação.<br><br>Quando o utilizador introduzir dados pessoais pertencentes a outras pessoas, deverá assegurar que possui fundamento legítimo para o fazer e que cumpre as obrigações de informação aplicáveis. A Rota Singular não utiliza automaticamente esses dados para finalidades diferentes das previstas para o funcionamento da respetiva solução.`)}
+
+      ${secao("4. Para que utilizamos os dados", `Os dados pessoais poderão ser tratados, conforme aplicável a cada aplicação, para:
+        ${lista([
+          "criar e gerir a conta do utilizador",
+          "permitir o acesso à aplicação",
+          "disponibilizar as funcionalidades contratadas ou escolhidas",
+          "guardar e organizar informações introduzidas pelo utilizador",
+          "realizar sincronização ou cópia de segurança, quando disponibilizadas",
+          "permitir exportação ou recuperação de dados",
+          "prestar suporte",
+          "comunicar informações relacionadas com o funcionamento da aplicação",
+          "garantir segurança e prevenir utilizações indevidas",
+          "detetar e corrigir erros ou problemas técnicos",
+          "cumprir obrigações legais",
+          "exercer ou defender direitos",
+          "manter e melhorar a segurança, estabilidade e funcionamento das soluções",
+        ])}
+        <br>Os dados não serão tratados para finalidades incompatíveis com aquelas para as quais foram recolhidos sem que exista fundamento jurídico adequado.`)}
+
+      ${secao("5. Base legal para o tratamento", `O tratamento de dados pessoais realizado no âmbito da família ela. terá como base jurídica aquela que for adequada à finalidade concreta. Dependendo do caso, poderá basear-se em:
+        ${lista([
+          "execução de um contrato ou de diligências pré-contratuais",
+          "cumprimento de uma obrigação legal",
+          "consentimento do titular dos dados",
+          "prossecução de interesses legítimos, quando legalmente admissível",
+          "outra base jurídica prevista no RGPD ou na legislação aplicável",
+        ])}
+        <br>Quando o tratamento depender de consentimento, este poderá ser retirado nos termos legalmente aplicáveis. A retirada do consentimento não afeta a licitude do tratamento realizado anteriormente com base nesse consentimento.`)}
+
+      ${secao("6. Armazenamento e funcionamento offline", `Algumas soluções da família ela. poderão utilizar mecanismos de armazenamento local e permitir o funcionamento sem ligação permanente à Internet. Quando essa arquitetura for utilizada, determinadas informações poderão permanecer inicialmente armazenadas no dispositivo do utilizador.<br><br>Dependendo da aplicação, poderão existir funcionalidades de sincronização, cópia de segurança ou armazenamento remoto. Nesses casos, os dados necessários para essas funcionalidades poderão ser transmitidos para os sistemas utilizados pela respetiva aplicação. Nem todas as aplicações da família ela. utilizam necessariamente a mesma arquitetura ou disponibilizam as mesmas funcionalidades.`)}
+
+      ${secao("7. Serviços tecnológicos utilizados", `Para disponibilizar determinadas funcionalidades, as aplicações poderão utilizar serviços tecnológicos externos, como serviços de alojamento, armazenamento, autenticação, sincronização, segurança, comunicação ou outros serviços necessários ao funcionamento da solução. Quando esses serviços envolverem tratamento de dados pessoais, serão utilizados de acordo com as finalidades e condições aplicáveis ao respetivo serviço. A utilização de fornecedores tecnológicos poderá variar entre aplicações.`)}
+
+      ${secao("8. Segurança dos dados", `São adotadas medidas técnicas e organizativas adequadas para proteger os dados pessoais contra acessos não autorizados, perda, destruição, alteração ou divulgação indevida. As medidas adotadas poderão incluir, conforme a solução:
+        ${lista([
+          "autenticação e controlo de acesso",
+          "proteção das comunicações",
+          "gestão de permissões",
+          "cópias de segurança",
+          "mecanismos de recuperação",
+          "proteção da infraestrutura",
+          "monitorização e correção de problemas de segurança",
+        ])}
+        <br>Apesar das medidas adotadas, nenhum sistema digital pode garantir segurança absoluta.`)}
+
+      ${secao("9. Conservação dos dados", `Os dados pessoais serão conservados durante o período necessário para cumprir as finalidades para as quais foram recolhidos. O período poderá variar de acordo com:
+        ${lista([
+          "a aplicação utilizada",
+          "a existência de uma conta",
+          "as funcionalidades utilizadas",
+          "obrigações legais",
+          "necessidades de segurança",
+          "cópias de segurança",
+          "exercício ou defesa de direitos",
+        ])}
+        <br>Quando uma aplicação permitir a eliminação de dados ou da conta, a eliminação será realizada de acordo com a arquitetura e os procedimentos aplicáveis à respetiva solução. Determinados dados poderão permanecer temporariamente em cópias de segurança até ao respetivo ciclo de eliminação ou substituição.`)}
+
+      ${secao("10. Eliminação dos dados e da conta", `Quando disponibilizada pela aplicação, o utilizador poderá solicitar ou realizar a eliminação da sua conta ou dos seus dados através dos mecanismos existentes no próprio serviço.<br><br>A eliminação poderá não abranger dados cuja conservação seja necessária para cumprimento de uma obrigação legal ou para o exercício ou defesa de direitos. A eliminação de dados armazenados localmente e a eliminação de dados sincronizados ou armazenados remotamente poderão seguir procedimentos diferentes, de acordo com a arquitetura da aplicação.`)}
+
+      ${secao("11. Direitos do utilizador", `Nos termos do RGPD e da legislação aplicável, o titular dos dados poderá, quando aplicável, exercer os seguintes direitos:
+        ${lista([
+          "acesso aos seus dados pessoais",
+          "retificação de dados incorretos ou incompletos",
+          "apagamento dos dados",
+          "limitação do tratamento",
+          "portabilidade dos dados",
+          "oposição ao tratamento",
+          "retirada do consentimento, quando o tratamento se basear em consentimento",
+          "direitos relacionados com determinadas decisões exclusivamente automatizadas",
+        ])}
+        <br>O exercício desses direitos poderá estar sujeito às condições e exceções previstas na legislação aplicável.`)}
+
+      ${secao("12. Como exercer os seus direitos", `Para questões relacionadas com privacidade ou para exercer os seus direitos, o utilizador poderá contactar:<br><br><strong>Carla Assis</strong> — Rota Singular<br>E-mail: contato@rotasingular.com<br><br>Poderá ser solicitada informação adicional para confirmar a identidade do requerente quando necessário para proteger os dados pessoais. Os pedidos serão tratados dentro dos prazos estabelecidos pela legislação aplicável.`)}
+
+      ${secao("13. Dados de terceiros", `Determinadas aplicações podem permitir o registo ou organização de informações relativas a outras pessoas. Quando o utilizador introduzir dados pessoais de terceiros na aplicação, deverá assegurar que possui fundamento legítimo para esse tratamento e que cumpre as obrigações de informação aplicáveis. A utilização da aplicação não transfere automaticamente para a Rota Singular a responsabilidade pelas finalidades para as quais o utilizador utiliza esses dados.`)}
+
+      ${secao("14. Crianças e menores", `As aplicações da família ela. não são, por regra, destinadas a crianças, salvo quando expressamente indicado. Quando uma solução for concebida para utilização por menores ou envolver o tratamento de dados de menores, serão adotadas medidas e informações adequadas à finalidade e ao enquadramento legal aplicável.`)}
+
+      ${secao("15. Inteligência Artificial e automação", `Algumas soluções da família ela. poderão incorporar funcionalidades de Inteligência Artificial ou automação. Quando essas funcionalidades envolverem tratamento de dados pessoais, serão aplicadas as regras de proteção de dados adequadas à finalidade e à tecnologia utilizada. Quando uma solução envolver decisões exclusivamente automatizadas com efeitos jurídicos ou efeitos igualmente significativos, serão observadas as garantias previstas na legislação aplicável.`)}
+
+      ${secao("16. Cookies e tecnologias semelhantes", `Dependendo da aplicação ou plataforma, poderão ser utilizados cookies, armazenamento local ou tecnologias semelhantes para garantir o funcionamento, segurança, preferências e outras funcionalidades. Quando forem utilizados mecanismos que dependam de consentimento, este será solicitado de acordo com a legislação aplicável. Informações adicionais poderão ser apresentadas na própria aplicação ou numa política específica de cookies, quando necessário.`)}
+
+      ${secao("17. Transferências internacionais", `Dependendo dos serviços tecnológicos utilizados por determinada aplicação, os dados poderão ser tratados ou armazenados fora de Portugal ou do Espaço Económico Europeu. Quando aplicável, serão utilizados os mecanismos e garantias previstos na legislação de proteção de dados para essas transferências.`)}
+
+      ${secao("18. Reclamação junto da autoridade de controlo", `O titular dos dados tem o direito de apresentar uma reclamação junto da autoridade de controlo competente caso considere que o tratamento dos seus dados pessoais viola a legislação aplicável. Em Portugal, a autoridade de controlo é a:<br><br><strong>Comissão Nacional de Proteção de Dados (CNPD)</strong><br>www.cnpd.pt<br><br>O direito de reclamação não prejudica o exercício de outros direitos ou meios de defesa previstos na legislação.`)}
+
+      ${secao("19. Alterações desta Política", `Esta Política poderá ser atualizada para refletir alterações nas aplicações da família ela., nas suas funcionalidades, nos processos de tratamento de dados ou na legislação aplicável. A versão atualizada será disponibilizada nos canais relevantes e apresentará a respetiva data de atualização. Quando uma alteração exigir uma comunicação específica ou novo consentimento, serão adotadas as medidas legalmente aplicáveis.`)}
+
+      ${secao("20. Informação específica de cada aplicação", `Esta Política estabelece as regras gerais de privacidade aplicáveis à família ela. Determinada aplicação poderá apresentar informações complementares quando as suas funcionalidades ou características exigirem maior especificidade. Essas informações complementares prevalecerão relativamente aos aspetos específicos da respetiva aplicação, sem afastar as regras gerais desta Política.`)}
+
+      <div style="margin-top:6px; padding-top:14px; border-top:1px solid var(--rs-border-soft); font-size:12.5px; color:var(--rs-ink-soft); line-height:1.55;">
+        <strong>Contacto</strong><br>
+        Carla Assis · Rota Singular<br>
+        E-mail: contato@rotasingular.com<br><br>
+        <em>Família ela. — Soluções digitais para uma vida mais tua.</em>
+      </div>
+    `;
   }
 
   // Edita e-mail, usuário e PIN da conta ativa — mesmo padrão do
